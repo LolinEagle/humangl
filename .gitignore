@@ -5,7 +5,6 @@
 *.slo
 *.lo
 *.o
-*.obj
 
 # Precompiled Headers
 *.gch
@@ -39,3 +38,12 @@
 
 # debug information files
 *.dwo
+
+# Visual Studio Code
+.vscode
+
+# Shaders
+*.spv
+
+# My executables
+humangl
