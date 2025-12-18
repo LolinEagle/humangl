@@ -1,13 +1,12 @@
 #include <VeCamera.hpp>
 
-VeCamera::VeCamera(void){
-}
+VeCamera::VeCamera(void) {}
 
-VeCamera::~VeCamera(){
-}
+VeCamera::~VeCamera() {}
 
-void			VeCamera::setPerspectiveProjection(float fovy, float aspect, float near, float far){
-	const float	tanHalfFovy = tan(fovy / 2.f);
+void VeCamera::setPerspectiveProjection(float fovy, float aspect, float near,
+										float far) {
+	const float tanHalfFovy = tan(fovy / 2.f);
 
 	_projectionMatrix = vem::mat4{0.0f};
 	_projectionMatrix.m[0][0] = 1.f / (aspect * tanHalfFovy);
@@ -17,16 +16,18 @@ void			VeCamera::setPerspectiveProjection(float fovy, float aspect, float near, 
 	_projectionMatrix.m[3][2] = -(far * near) / (far - near);
 }
 
-void			VeCamera::setViewYXZ(vem::vec3 position, vem::vec3 rotation){
-	const float	c3 = cos(rotation.z);
-	const float	s3 = sin(rotation.z);
-	const float	c2 = cos(rotation.x);
-	const float	s2 = sin(rotation.x);
-	const float	c1 = cos(rotation.y);
-	const float	s1 = sin(rotation.y);
-	const vem::vec3	u{(c1 * c3 + s1 * s2 * s3), (c2 * s3), (c1 * s2 * s3 - c3 * s1)};
-	const vem::vec3	v{(c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3)};
-	const vem::vec3	w{(c2 * s1), (-s2), (c1 * c2)};
+void VeCamera::setViewYXZ(vem::vec3 position, vem::vec3 rotation) {
+	const float c3 = cos(rotation.z);
+	const float s3 = sin(rotation.z);
+	const float c2 = cos(rotation.x);
+	const float s2 = sin(rotation.x);
+	const float c1 = cos(rotation.y);
+	const float s1 = sin(rotation.y);
+	const vem::vec3 u{(c1 * c3 + s1 * s2 * s3), (c2 * s3),
+					  (c1 * s2 * s3 - c3 * s1)};
+	const vem::vec3 v{(c3 * s1 * s2 - c1 * s3), (c2 * c3),
+					  (c1 * c3 * s2 + s1 * s3)};
+	const vem::vec3 w{(c2 * s1), (-s2), (c1 * c2)};
 
 	_viewMatrix = vem::mat4{1.f};
 	_viewMatrix.m[0][0] = u.x;
@@ -57,20 +58,17 @@ void			VeCamera::setViewYXZ(vem::vec3 position, vem::vec3 rotation){
 	_inverseViewMatrix.m[3][2] = position.z;
 }
 
-const vem::mat4	&VeCamera::getProjection(void) const {
+const vem::mat4 &VeCamera::getProjection(void) const {
 	return (_projectionMatrix);
 }
 
-const vem::mat4	&VeCamera::getView(void) const {
-	return (_viewMatrix);
-}
+const vem::mat4 &VeCamera::getView(void) const { return (_viewMatrix); }
 
-const vem::mat4	&VeCamera::getInverseView(void) const {
+const vem::mat4 &VeCamera::getInverseView(void) const {
 	return (_inverseViewMatrix);
 }
 
-const vem::vec3	VeCamera::getPosition(void) const {
-	return (vem::vec3(
-		_inverseViewMatrix.m[3][0], _inverseViewMatrix.m[3][1], _inverseViewMatrix.m[3][2]
-	));
+const vem::vec3 VeCamera::getPosition(void) const {
+	return (vem::vec3(_inverseViewMatrix.m[3][0], _inverseViewMatrix.m[3][1],
+					  _inverseViewMatrix.m[3][2]));
 }

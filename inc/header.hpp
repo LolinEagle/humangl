@@ -5,6 +5,8 @@
 #include <GLFW/glfw3.h>
 
 // Include
+#include <png.h>
+
 #include <chrono>
 #include <cstring>
 #include <fstream>
@@ -12,7 +14,6 @@
 #include <iostream>
 #include <limits>
 #include <memory>
-#include <png.h>
 #include <sstream>
 #include <stdexcept>
 #include <vem.hpp>

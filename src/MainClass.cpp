@@ -2,14 +2,12 @@
 
 using namespace std;
 
-void	MainClass::loadGameObjects(
-	const string &filepath, vem::vec3 translation, vem::vec3 scale,
-	const int &color, const int &texture
-){
-	shared_ptr<VeModel>	veModel = VeModel::createModelFromFile(
-		_veDevice, "model/" + filepath + ".obj", color, texture
-	);
-	auto				gameObject = VeGameObject::createGameObject();
+void MainClass::loadGameObjects(const string &filepath, vem::vec3 translation,
+								vem::vec3 scale, const int &color,
+								const int &texture) {
+	shared_ptr<VeModel> veModel = VeModel::createModelFromFile(
+		_veDevice, "model/" + filepath + ".obj", color, texture);
+	auto gameObject = VeGameObject::createGameObject();
 
 	gameObject._model = veModel;
 	gameObject._transform.translation = translation;
@@ -17,60 +15,70 @@ void	MainClass::loadGameObjects(
 	_gameObjects.emplace(gameObject.getId(), move(gameObject));
 }
 
-MainClass::MainClass(const int &scene, const int &color, const int &texture){
+MainClass::MainClass(const int &scene, const int &color, const int &texture) {
 	_globalPool = VeDescriptorPool::Builder(_veDevice)
-		.setMaxSets(MAX_FRAMES_IN_FLIGHT * 2)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT)
-		.build();
+					  .setMaxSets(MAX_FRAMES_IN_FLIGHT * 2)
+					  .addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+								   MAX_FRAMES_IN_FLIGHT)
+					  .addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+								   MAX_FRAMES_IN_FLIGHT)
+					  .build();
 
 	// Objects (filepath, translation, scale)
-	if (scene == 0){
-		loadGameObjects("42",		{0.f, 0.f, -1.f}, {1.f, -1.f, 1.f}, color, texture);
-	} else if (scene == 1){
-		loadGameObjects("cube",		{0.f, 0.f,  0.f}, {1.f,  1.f, 1.f}, color, texture);
-	} else if (scene == 2){
-		loadGameObjects("teapot",	{0.f, 0.f,  0.f}, {1.f, -1.f, 1.f}, color, texture);
-	} else if (scene == 3){
-		loadGameObjects("teapot2",	{0.f, 0.f,  0.f}, {1.f, -1.f, 1.f}, color, texture);
-	} else if (scene == 4){
-		loadGameObjects("42",		{-2.0f, -0.2f,  1.0f}, {1.0f, -1.0f, 1.0f}, color, texture);
-		loadGameObjects("cube",		{-2.0f,  0.0f, -2.0f}, {1.0f,  1.0f, 1.0f}, color, texture);
-		loadGameObjects("teapot",	{ 2.0f,  1.1f,  2.0f}, {1.0f, -1.0f, 1.0f}, color, texture);
-		loadGameObjects("teapot2",	{ 2.0f, -0.3f, -2.0f}, {1.0f, -1.0f, 1.0f}, color, texture);
-		loadGameObjects("cube",		{ 0.0f,  1.2f,  0.0f}, {8.0f,  0.1f, 8.0f}, color, texture);
+	if (scene == 0) {
+		loadGameObjects("42", {0.f, 0.f, -1.f}, {1.f, -1.f, 1.f}, color,
+						texture);
+	} else if (scene == 1) {
+		loadGameObjects("cube", {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f}, color,
+						texture);
+	} else if (scene == 2) {
+		loadGameObjects("teapot", {0.f, 0.f, 0.f}, {1.f, -1.f, 1.f}, color,
+						texture);
+	} else if (scene == 3) {
+		loadGameObjects("teapot2", {0.f, 0.f, 0.f}, {1.f, -1.f, 1.f}, color,
+						texture);
+	} else if (scene == 4) {
+		loadGameObjects("42", {-2.0f, -0.2f, 1.0f}, {1.0f, -1.0f, 1.0f}, color,
+						texture);
+		loadGameObjects("cube", {-2.0f, 0.0f, -2.0f}, {1.0f, 1.0f, 1.0f}, color,
+						texture);
+		loadGameObjects("teapot", {2.0f, 1.1f, 2.0f}, {1.0f, -1.0f, 1.0f},
+						color, texture);
+		loadGameObjects("teapot2", {2.0f, -0.3f, -2.0f}, {1.0f, -1.0f, 1.0f},
+						color, texture);
+		loadGameObjects("cube", {0.0f, 1.2f, 0.0f}, {8.0f, 0.1f, 8.0f}, color,
+						texture);
 	}
 }
 
-MainClass::~MainClass(){
-}
+MainClass::~MainClass() {}
 
-void	MainClass::run(void){
-	vector<unique_ptr<VeBuffer>>	uboBuffers(MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < uboBuffers.size(); i++){
+void MainClass::run(void) {
+	vector<unique_ptr<VeBuffer>> uboBuffers(MAX_FRAMES_IN_FLIGHT);
+	for (int i = 0; i < uboBuffers.size(); i++) {
 		uboBuffers[i] = make_unique<VeBuffer>(
-			_veDevice,
-			sizeof(GlobalUbo),
-			1,
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			_veDevice, sizeof(GlobalUbo), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
-			_veDevice._properties.limits.minUniformBufferOffsetAlignment
-		);
+			_veDevice._properties.limits.minUniformBufferOffsetAlignment);
 		uboBuffers[i]->map();
 	}
 
-	auto					globalSetLayout = VeDescriptorSetLayout::Builder(_veDevice)
-		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-		.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
-		.build();
-	vector<VkDescriptorSet>	globalDescriptorSets(MAX_FRAMES_IN_FLIGHT);
-	for (int i = 0; i < globalDescriptorSets.size(); i++){
-		VkDescriptorBufferInfo	bufferInfo = uboBuffers[i]->descriptorBufferInfo();
-		VkDescriptorImageInfo	imageInfo;
-		for (const auto &[id, gameObject] : _gameObjects){
-			if (gameObject._model){
+	auto globalSetLayout =
+		VeDescriptorSetLayout::Builder(_veDevice)
+			.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+						VK_SHADER_STAGE_ALL_GRAPHICS)
+			.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+						VK_SHADER_STAGE_FRAGMENT_BIT)
+			.build();
+	vector<VkDescriptorSet> globalDescriptorSets(MAX_FRAMES_IN_FLIGHT);
+	for (int i = 0; i < globalDescriptorSets.size(); i++) {
+		VkDescriptorBufferInfo bufferInfo =
+			uboBuffers[i]->descriptorBufferInfo();
+		VkDescriptorImageInfo imageInfo;
+		for (const auto &[id, gameObject] : _gameObjects) {
+			if (gameObject._model) {
 				imageInfo = gameObject._model->descriptorImageInfo();
-				break ;
+				break;
 			}
 		}
 		VeDescriptorWriter(*globalSetLayout, *_globalPool)
@@ -79,52 +87,53 @@ void	MainClass::run(void){
 			.build(globalDescriptorSets[i]);
 	}
 
-	SimpleRender	simpleRenderSystem{
-		_veDevice, _veRenderer.getSwapchainRenderPass(), globalSetLayout->getDescriptorSetLayout()
-	};
-	PointLight		pointLightSystem{
-		_veDevice, _veRenderer.getSwapchainRenderPass(), globalSetLayout->getDescriptorSetLayout()
-	};
+	SimpleRender simpleRenderSystem{_veDevice,
+									_veRenderer.getSwapchainRenderPass(),
+									globalSetLayout->getDescriptorSetLayout()};
+	PointLight pointLightSystem{_veDevice, _veRenderer.getSwapchainRenderPass(),
+								globalSetLayout->getDescriptorSetLayout()};
 
-	VeCamera	camera{};
-	float		aspect;
-	auto		viewerObject = VeGameObject::createGameObject();
-	Controller	cameraController{_veWindow.getGLFWwindow()};
+	VeCamera camera{};
+	float aspect;
+	auto viewerObject = VeGameObject::createGameObject();
+	Controller cameraController{_veWindow.getGLFWwindow()};
 
 	// Time
-	auto		currentTime = chrono::high_resolution_clock::now();
-	auto		newTime = currentTime;
-	float		frameTime;
-	int			frameIndex;
+	auto currentTime = chrono::high_resolution_clock::now();
+	auto newTime = currentTime;
+	float frameTime;
+	int frameIndex;
 
 	// Default value for camera
 	viewerObject._transform.translation = {-8.f, -2.0f, .0f};
 	viewerObject._transform.rotation = {.0f, 1.5f, .0f};
-	while (!_veWindow.shouldClose()){
+	while (!_veWindow.shouldClose()) {
 		glfwPollEvents();
 
 		// Time
 		newTime = chrono::high_resolution_clock::now();
-		frameTime = chrono::duration<float, chrono::seconds::period>(newTime - currentTime).count();
+		frameTime = chrono::duration<float, chrono::seconds::period>(
+						newTime - currentTime)
+						.count();
 		currentTime = newTime;
 
-		cameraController.moveInPlaneXZ(_veWindow.getGLFWwindow(), frameTime, viewerObject);
-		camera.setViewYXZ(viewerObject._transform.translation, viewerObject._transform.rotation);
+		cameraController.moveInPlaneXZ(_veWindow.getGLFWwindow(), frameTime,
+									   viewerObject);
+		camera.setViewYXZ(viewerObject._transform.translation,
+						  viewerObject._transform.rotation);
 		aspect = _veRenderer.getAspectRatio();
 		camera.setPerspectiveProjection(vem::radians(50.), aspect, .1f, 64.f);
-		if (auto commandBuffer = _veRenderer.beginFrame()){
+		if (auto commandBuffer = _veRenderer.beginFrame()) {
 			frameIndex = _veRenderer.getCurrentFrameIndex();
-			FrameInfo	frameInfo{
-				frameIndex,
-				frameTime,
-				commandBuffer,
-				camera,
-				globalDescriptorSets[frameIndex],
-				_gameObjects
-			};
+			FrameInfo frameInfo{frameIndex,
+								frameTime,
+								commandBuffer,
+								camera,
+								globalDescriptorSets[frameIndex],
+								_gameObjects};
 
 			// Update
-			GlobalUbo	ubo{};
+			GlobalUbo ubo{};
 			ubo.projection = camera.getProjection();
 			ubo.view = camera.getView();
 			ubo.inverseView = camera.getInverseView();
