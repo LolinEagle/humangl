@@ -5,14 +5,13 @@
 
 namespace vem{
 
-class vec2;
-class vec3;
-class vec4;
-class mat3;
-class mat4;
+struct vec2;
+struct vec3;
+struct vec4;
+struct mat3;
+struct mat4;
 
-class vec2{
-public:
+struct vec2{
 	float	x, y;
 
 	vec2(void);
@@ -30,8 +29,7 @@ public:
 	const float&	operator[](int i) const;
 };
 
-class vec3{
-public:
+struct vec3{
 	float	x, y, z;
 
 	vec3(void);
@@ -50,8 +48,7 @@ public:
 	const float&	operator[](int i) const;
 };
 
-class vec4{
-public:
+struct vec4{
 	float	x, y, z, w;
 
 	vec4(void);
@@ -70,8 +67,7 @@ public:
 	const float&	operator[](int i) const;
 };
 
-class mat3{
-public:
+struct mat3{
 	float	m[3][3];
 
 	mat3(void);
@@ -81,8 +77,7 @@ public:
 	mat3	operator*(const mat3 &v) const;
 };
 
-class mat4{
-public:
+struct mat4{
 	float	m[4][4];
 
 	mat4(void);

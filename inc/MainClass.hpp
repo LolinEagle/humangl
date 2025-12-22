@@ -14,21 +14,21 @@
 using namespace std;
 
 class MainClass{
-	private:
-		VeWindow	_veWindow{WIDTH, HEIGHT};
-		VeDevice	_veDevice{_veWindow};
-		VeRenderer	_veRenderer{_veWindow, _veDevice};
+private:
+	VeWindow	_veWindow{WIDTH, HEIGHT};
+	VeDevice	_veDevice{_veWindow};
+	VeRenderer	_veRenderer{_veWindow, _veDevice};
 
-		unique_ptr<VeDescriptorPool>	_globalPool{};
-		VeGameObject::Map				_gameObjects;
+	unique_ptr<VeDescriptorPool>	_globalPool{};
+	VeGameObject::Map				_gameObjects;
 
-		void	loadGameObjects(
-			const string &filepath, vem::vec3 translation, vem::vec3 scale,
-			const int &color, const int &texture
-		);
-	public:
-		MainClass(const int &scene, const int &color, const int &texture);
-		~MainClass();
+	void	loadGameObjects(
+		const string &filepath, vem::vec3 translation, vem::vec3 scale,
+		const int &color, const int &texture
+	);
+public:
+	MainClass(const int &color, const int &texture);
+	~MainClass();
 
-		void	run(void);
+	void	run(void);
 };

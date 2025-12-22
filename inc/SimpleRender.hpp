@@ -14,16 +14,16 @@ struct PushConstantData{
 };
 
 class SimpleRender{
-	private:
-		VeDevice				&_veDevice;
-		unique_ptr<VePipeline>	_vePipeline;
-		VkPipelineLayout		_pipelineLayout;
+private:
+	VeDevice				&_veDevice;
+	unique_ptr<VePipeline>	_vePipeline;
+	VkPipelineLayout		_pipelineLayout;
 
-		void	createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
-		void	createPipeline(VkRenderPass renderPass);
-	public:
-		SimpleRender(VeDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout layout);
-		~SimpleRender();
+	void	createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+	void	createPipeline(VkRenderPass renderPass);
+public:
+	SimpleRender(VeDevice &d, VkRenderPass rp, VkDescriptorSetLayout layout);
+	~SimpleRender();
 
-		void	renderObjects(FrameInfo &frameInfo);
+	void	renderObjects(FrameInfo &frameInfo);
 };

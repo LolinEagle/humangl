@@ -22,8 +22,9 @@ RM			=	rm -rf
 GLSLC		=	./shader/glslc
 
 # Flags
-CPPFLAGS	=	-std=c++17 -MMD
-LDFLAGS		=	-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi -lpng
+CPP_FLAGS	=	-std=c++17 -MMD
+LIB_FLAGS	=	-lglfw -lvulkan -ldl -lpthread -lpng
+X11_FLAGS	=	-lX11 -lXxf86vm -lXrandr -lXi
 
 # Path
 INC			=	-Iinc -Iinc/VulkanEngine
@@ -45,14 +46,14 @@ shaderclean:
 	${RM} ./shader/*.spv
 
 fclean:clean shaderclean
-	${RM} ${NAME} 
+	${RM} ${NAME}
 
 re:fclean
 	make all
 
 run:${NAME}
 	clear
-	./${NAME}
+	./${NAME} 1 1
 
 shader:shaderclean
 	${GLSLC} ./shader/simpleShader.vert -o ./shader/simpleShader.vert.spv
@@ -61,13 +62,13 @@ shader:shaderclean
 	${GLSLC} ./shader/pointLight.frag -o ./shader/pointLight.frag.spv
 
 ${OBJ_PATH}%.o:${SRC_PATH}%.cpp
-	${CPP} ${CPPFLAGS} ${INC} -c $< -o $@
+	${CPP} ${CPP_FLAGS} ${INC} -c $< -o $@
 
 ${OBJ_DIRS}:
 	mkdir ${OBJ_DIRS} ${OBJ_PATH_VE}
 
 ${NAME}:${OBJ_DIRS} ${OBJ} shader
-	${CPP} ${OBJ} ${LDFLAGS} -o $@
+	${CPP} ${OBJ} ${LIB_FLAGS} ${X11_FLAGS} -o $@
 
 .PHONY:all clean shaderclean fclean re run shader
 

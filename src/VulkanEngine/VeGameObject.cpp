@@ -74,10 +74,12 @@ VeGameObject	VeGameObject::createGameObject(void){
 	return (VeGameObject(currentId++));
 }
 
-VeGameObject	VeGameObject::makePointLight(float intensity, float radius, vem::vec3 color){
+VeGameObject	VeGameObject::makePointLight(
+	float intensity, float r, vem::vec3 col
+){
 	VeGameObject	obj = VeGameObject::createGameObject();
-	obj._color = color;
-	obj._transform.scale.x = radius;
+	obj._color = col;
+	obj._transform.scale.x = r;
 	obj._pointLight = make_unique<PointLightComponent>();
 	obj._pointLight->lightIntensity = intensity;
 

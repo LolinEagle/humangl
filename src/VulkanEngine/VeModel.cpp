@@ -345,7 +345,7 @@ void	VeModel::createTextureImages(const int &texture){
 	string			filename;
 	if (texture == 0) filename = "model/texture/LolinEagle.png";
 	else if (texture == 1) filename = "model/texture/Stone.png";
-	else  filename = "model/texture/Wood.png" ;
+	else filename = "model/texture/Wood.png" ;
 	unsigned char	*pixels = loadImage(
 		filename.c_str(),
 		&texWidth,
@@ -441,7 +441,7 @@ void	VeModel::createTextureSampler(void){
 	samplerInfo.maxLod = 0.f;
 
 	if (vkCreateSampler(_veDevice.device(), &samplerInfo, nullptr, &_textureSampler) != 0)
-        throw (runtime_error("failed to create a sampler"));   
+		throw (runtime_error("failed to create a sampler"));
 }
 
 void	VeModel::createVertexBuffers(const vector<Vertex> &vertices){
