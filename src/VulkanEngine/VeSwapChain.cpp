@@ -52,10 +52,10 @@ void	VeSwapChain::createSwapChain(void){
 	if (vkCreateSwapchainKHR(_device.device(), &createInfo, nullptr, &_swapChain) != 0)
 		throw (runtime_error("failed to create swap chain"));
 
-	// We only specified a minimum number of images in the swap chain, so the implementation is
-	// allowed to create a swap chain with more. That's why we'll first query the final number of
-	// images with vkGetSwapchainImagesKHR, then resize the container and finally call it again to
-	// retrieve the handles.
+	// We only specified a minimum number of images in the swap chain, so the
+	// implementation is allowed to create a swap chain with more. That's why
+	// we'll first query the final number of images with vkGetSwapchainImagesKHR
+	// then resize container and finally call it again to retrieve the handles.
 	vkGetSwapchainImagesKHR(_device.device(), _swapChain, &imageCount, nullptr);
 	_swapChainImages.resize(imageCount);
 	vkGetSwapchainImagesKHR(_device.device(), _swapChain, &imageCount, _swapChainImages.data());
@@ -217,9 +217,9 @@ void	VeSwapChain::createFramebuffers(void){
 }
 
 void	VeSwapChain::createSyncObjects(void){
-	_imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	_renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	_inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+	_imageAvailableSemaphores.resize(MAX_FRAMES);
+	_renderFinishedSemaphores.resize(MAX_FRAMES);
+	_inFlightFences.resize(MAX_FRAMES);
 	_imagesInFlight.resize(imageCount(), VK_NULL_HANDLE);
 
 	VkSemaphoreCreateInfo	si{};
@@ -229,7 +229,7 @@ void	VeSwapChain::createSyncObjects(void){
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++){
+	for (uint32_t i = 0; i < MAX_FRAMES; i++){
 		if (
 			vkCreateSemaphore(_device.device(), &si, nullptr, &_imageAvailableSemaphores[i]) != 0 ||
 			vkCreateSemaphore(_device.device(), &si, nullptr, &_renderFinishedSemaphores[i]) != 0 ||
@@ -313,7 +313,7 @@ VeSwapChain::~VeSwapChain(){
 	vkDestroyRenderPass(_device.device(), _renderPass, nullptr);
 
 	// Cleanup synchronization objects
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++){
+	for (size_t i = 0; i < MAX_FRAMES; i++){
 		vkDestroySemaphore(_device.device(), _renderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(_device.device(), _imageAvailableSemaphores[i], nullptr);
 		vkDestroyFence(_device.device(), _inFlightFences[i], nullptr);
@@ -422,7 +422,7 @@ VkResult		VeSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint
 
 	auto	result = vkQueuePresentKHR(_device.presentQueue(), &presentInfo);
 
-	_currentFrame = (_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	_currentFrame = (_currentFrame + 1) % MAX_FRAMES;
 	return (result);
 }
 

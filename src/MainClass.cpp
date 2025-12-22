@@ -1,6 +1,7 @@
 #include <MainClass.hpp>
 
 using namespace std;
+using seconds_float = chrono::duration<float, chrono::seconds::period>;
 
 void	MainClass::loadGameObjects(
 	const string &filepath, vem::vec3 translation, vem::vec3 scale,
@@ -9,7 +10,7 @@ void	MainClass::loadGameObjects(
 	shared_ptr<VeModel>	veModel = VeModel::createModelFromFile(
 		_veDevice, "model/" + filepath + ".obj", color, texture
 	);
-	auto				gameObject = VeGameObject::createGameObject();
+	auto	gameObject = VeGameObject::createGameObject();
 
 	gameObject._model = veModel;
 	gameObject._transform.translation = translation;
@@ -17,36 +18,40 @@ void	MainClass::loadGameObjects(
 	_gameObjects.emplace(gameObject.getId(), move(gameObject));
 }
 
-MainClass::MainClass(const int &scene, const int &color, const int &texture){
+MainClass::MainClass(const int &color, const int &texture){
 	_globalPool = VeDescriptorPool::Builder(_veDevice)
-		.setMaxSets(MAX_FRAMES_IN_FLIGHT * 2)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES_IN_FLIGHT)
+		.setMaxSets(MAX_FRAMES * 2)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES)
 		.build();
 
-	// Objects (filepath, translation, scale)
-	if (scene == 0){
-		loadGameObjects("42",		{0.f, 0.f, -1.f}, {1.f, -1.f, 1.f}, color, texture);
-	} else if (scene == 1){
-		loadGameObjects("cube",		{0.f, 0.f,  0.f}, {1.f,  1.f, 1.f}, color, texture);
-	} else if (scene == 2){
-		loadGameObjects("teapot",	{0.f, 0.f,  0.f}, {1.f, -1.f, 1.f}, color, texture);
-	} else if (scene == 3){
-		loadGameObjects("teapot2",	{0.f, 0.f,  0.f}, {1.f, -1.f, 1.f}, color, texture);
-	} else if (scene == 4){
-		loadGameObjects("42",		{-2.0f, -0.2f,  1.0f}, {1.0f, -1.0f, 1.0f}, color, texture);
-		loadGameObjects("cube",		{-2.0f,  0.0f, -2.0f}, {1.0f,  1.0f, 1.0f}, color, texture);
-		loadGameObjects("teapot",	{ 2.0f,  1.1f,  2.0f}, {1.0f, -1.0f, 1.0f}, color, texture);
-		loadGameObjects("teapot2",	{ 2.0f, -0.3f, -2.0f}, {1.0f, -1.0f, 1.0f}, color, texture);
-		loadGameObjects("cube",		{ 0.0f,  1.2f,  0.0f}, {8.0f,  0.1f, 8.0f}, color, texture);
-	}
+	const vem::vec3	scale{2.f, 3.f, 2.f};
+
+	// Head & Torso
+	loadGameObjects("cube", {0.f, -25.f, 0.f}, {4.f, 4.f, 4.f}, color, texture);
+	loadGameObjects("cube", {0.f, -15.f, 0.f}, {4.f, 6.f, 2.f}, color, texture);
+
+	// Arms
+	loadGameObjects("cube", {6.f, -18.f, 0.f}, scale, color, texture);
+	loadGameObjects("cube", {-6.f, -18.f, 0.f}, scale, color, texture);
+	loadGameObjects("cube", {6.f, -12.f, 0.f}, scale, color, texture);
+	loadGameObjects("cube", {-6.f, -12.f, 0.f}, scale, color, texture);
+
+	// Legs
+	loadGameObjects("cube", {2.f, -6.f, 0.f}, scale, color, texture);
+	loadGameObjects("cube", {-2.f, -6.f, 0.f}, scale, color, texture);
+	loadGameObjects("cube", {2.f, 0.f, 0.f}, scale, color, texture);
+	loadGameObjects("cube", {-2.f, 0.f, 0.f}, scale, color, texture);
+
+	// Ground
+	loadGameObjects("cube", {0.f, 4.f, 0.f}, {16.f, 1.f, 16.f}, color, texture);
 }
 
 MainClass::~MainClass(){
 }
 
 void	MainClass::run(void){
-	vector<unique_ptr<VeBuffer>>	uboBuffers(MAX_FRAMES_IN_FLIGHT);
+	vector<unique_ptr<VeBuffer>>	uboBuffers(MAX_FRAMES);
 	for (int i = 0; i < uboBuffers.size(); i++){
 		uboBuffers[i] = make_unique<VeBuffer>(
 			_veDevice,
@@ -59,31 +64,35 @@ void	MainClass::run(void){
 		uboBuffers[i]->map();
 	}
 
-	auto					globalSetLayout = VeDescriptorSetLayout::Builder(_veDevice)
-		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_ALL_GRAPHICS)
-		.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+	auto	globalSetLayout = VeDescriptorSetLayout::Builder(_veDevice)
+		.addBinding(0, (VkDescriptorType)6, VK_SHADER_STAGE_ALL_GRAPHICS)
+		.addBinding(1, (VkDescriptorType)1, VK_SHADER_STAGE_FRAGMENT_BIT)
 		.build();
-	vector<VkDescriptorSet>	globalDescriptorSets(MAX_FRAMES_IN_FLIGHT);
+	vector<VkDescriptorSet>	globalDescriptorSets(MAX_FRAMES);
 	for (int i = 0; i < globalDescriptorSets.size(); i++){
-		VkDescriptorBufferInfo	bufferInfo = uboBuffers[i]->descriptorBufferInfo();
-		VkDescriptorImageInfo	imageInfo;
+		VkDescriptorBufferInfo	buffer = uboBuffers[i]->descriptorBufferInfo();
+		VkDescriptorImageInfo	image;
 		for (const auto &[id, gameObject] : _gameObjects){
 			if (gameObject._model){
-				imageInfo = gameObject._model->descriptorImageInfo();
+				image = gameObject._model->descriptorImageInfo();
 				break ;
 			}
 		}
 		VeDescriptorWriter(*globalSetLayout, *_globalPool)
-			.writeBuffer(0, &bufferInfo)
-			.writeImage(1, &imageInfo)
+			.writeBuffer(0, &buffer)
+			.writeImage(1, &image)
 			.build(globalDescriptorSets[i]);
 	}
 
 	SimpleRender	simpleRenderSystem{
-		_veDevice, _veRenderer.getSwapchainRenderPass(), globalSetLayout->getDescriptorSetLayout()
+		_veDevice,
+		_veRenderer.getSwapchainRenderPass(),
+		globalSetLayout->getDescriptorSetLayout()
 	};
 	PointLight		pointLightSystem{
-		_veDevice, _veRenderer.getSwapchainRenderPass(), globalSetLayout->getDescriptorSetLayout()
+		_veDevice,
+		_veRenderer.getSwapchainRenderPass(),
+		globalSetLayout->getDescriptorSetLayout()
 	};
 
 	VeCamera	camera{};
@@ -105,11 +114,16 @@ void	MainClass::run(void){
 
 		// Time
 		newTime = chrono::high_resolution_clock::now();
-		frameTime = chrono::duration<float, chrono::seconds::period>(newTime - currentTime).count();
+		frameTime = seconds_float(newTime - currentTime).count();
 		currentTime = newTime;
 
-		cameraController.moveInPlaneXZ(_veWindow.getGLFWwindow(), frameTime, viewerObject);
-		camera.setViewYXZ(viewerObject._transform.translation, viewerObject._transform.rotation);
+		cameraController.moveInPlaneXZ(
+			_veWindow.getGLFWwindow(), frameTime, viewerObject
+		);
+		camera.setViewYXZ(
+			viewerObject._transform.translation,
+			viewerObject._transform.rotation
+		);
 		aspect = _veRenderer.getAspectRatio();
 		camera.setPerspectiveProjection(vem::radians(50.), aspect, .1f, 64.f);
 		if (auto commandBuffer = _veRenderer.beginFrame()){

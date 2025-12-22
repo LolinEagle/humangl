@@ -1,7 +1,7 @@
 #include <VeRenderer.hpp>
 
 void	VeRenderer::createCommandBuffers(void){
-	_commandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+	_commandBuffers.resize(MAX_FRAMES);
 
 	VkCommandBufferAllocateInfo	allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -93,7 +93,7 @@ void			VeRenderer::endFrame(void){
 	} else if (result != 0)
 		throw (runtime_error("failed to present swap chain image"));
 	_isFrameStarted = false;
-	_currentFrameIndex = (_currentFrameIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+	_currentFrameIndex = (_currentFrameIndex + 1) % MAX_FRAMES;
 }
 
 void			VeRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer){

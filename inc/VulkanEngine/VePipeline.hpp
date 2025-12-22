@@ -28,31 +28,31 @@ struct PipelineConfigInfo{
 };
 
 class VePipeline{
-	private:
-		VeDevice		&_veDevice;
-		VkPipeline		_graphicsPipeline;
-		VkShaderModule	_vertShaderModule;
-		VkShaderModule	_fragShaderModule;
+private:
+	VeDevice		&_veDevice;
+	VkPipeline		_graphicsPipeline;
+	VkShaderModule	_vertShaderModule;
+	VkShaderModule	_fragShaderModule;
 
-		static vector<char>	readFile(const string &filepath);
+	static vector<char>	readFile(const string &filepath);
 
-		// Create function
-		void	createGraphicsPipeline(
-			const string &vertFilepath,
-			const string &fragFilepath,
-			const PipelineConfigInfo &configInfo
-		);
-		void	createShaderModule(const vector<char>& code, VkShaderModule *shaderModule);
-	public:
-		VePipeline(
-			VeDevice &device,
-			const string &vertFilepath,
-			const string &fragFilepath,
-			const PipelineConfigInfo &configInfo
-		);
-		~VePipeline();
+	// Create function
+	void	createGraphicsPipeline(
+		const string &vertFilepath,
+		const string &fragFilepath,
+		const PipelineConfigInfo &configInfo
+	);
+	void	createShaderModule(const vector<char>& code, VkShaderModule *shaderModule);
+public:
+	VePipeline(
+		VeDevice &device,
+		const string &vertFilepath,
+		const string &fragFilepath,
+		const PipelineConfigInfo &configInfo
+	);
+	~VePipeline();
 
-		void		bind(VkCommandBuffer commandBuffer);
-		static void	defaultPipelineConfigInfo(PipelineConfigInfo &config);
-		static void	enableAlphaBlending(PipelineConfigInfo &config);
+	void		bind(VkCommandBuffer commandBuffer);
+	static void	defaultPipelineConfigInfo(PipelineConfigInfo &config);
+	static void	enableAlphaBlending(PipelineConfigInfo &config);
 };

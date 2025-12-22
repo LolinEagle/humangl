@@ -257,15 +257,15 @@ vec3	rotate(const vec3 &v, float angle, const vec3 &axis){
 	float	z = norm_axis.z;
 
 	vec3	result;
-	result.x = (cos_a + x * x * one_minus_cos) * v.x +
-			   (x * y * one_minus_cos - z * sin_a) * v.y +
-			   (x * z * one_minus_cos + y * sin_a) * v.z;
-	result.y = (y * x * one_minus_cos + z * sin_a) * v.x +
-			   (cos_a + y * y * one_minus_cos) * v.y +
-			   (y * z * one_minus_cos - x * sin_a) * v.z;
-	result.z = (z * x * one_minus_cos - y * sin_a) * v.x +
-			   (z * y * one_minus_cos + x * sin_a) * v.y +
-			   (cos_a + z * z * one_minus_cos) * v.z;
+	result.x =	(cos_a + x * x * one_minus_cos) * v.x +
+				(x * y * one_minus_cos - z * sin_a) * v.y +
+				(x * z * one_minus_cos + y * sin_a) * v.z;
+	result.y =	(y * x * one_minus_cos + z * sin_a) * v.x +
+				(cos_a + y * y * one_minus_cos) * v.y +
+				(y * z * one_minus_cos - x * sin_a) * v.z;
+	result.z =	(z * x * one_minus_cos - y * sin_a) * v.x +
+				(z * y * one_minus_cos + x * sin_a) * v.y +
+				(cos_a + z * z * one_minus_cos) * v.z;
 	return (result);
 }
 vec4 rotate(const vec4 &v, float angle, const vec3 &axis){

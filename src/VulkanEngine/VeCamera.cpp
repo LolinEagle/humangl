@@ -6,7 +6,9 @@ VeCamera::VeCamera(void){
 VeCamera::~VeCamera(){
 }
 
-void			VeCamera::setPerspectiveProjection(float fovy, float aspect, float near, float far){
+void			VeCamera::setPerspectiveProjection(
+	float fovy, float aspect, float near, float far
+){
 	const float	tanHalfFovy = tan(fovy / 2.f);
 
 	_projectionMatrix = vem::mat4{0.0f};
@@ -24,8 +26,12 @@ void			VeCamera::setViewYXZ(vem::vec3 position, vem::vec3 rotation){
 	const float	s2 = sin(rotation.x);
 	const float	c1 = cos(rotation.y);
 	const float	s1 = sin(rotation.y);
-	const vem::vec3	u{(c1 * c3 + s1 * s2 * s3), (c2 * s3), (c1 * s2 * s3 - c3 * s1)};
-	const vem::vec3	v{(c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3)};
+	const vem::vec3	u{
+		(c1 * c3 + s1 * s2 * s3), (c2 * s3), (c1 * s2 * s3 - c3 * s1)
+	};
+	const vem::vec3	v{
+		(c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3)
+	};
 	const vem::vec3	w{(c2 * s1), (-s2), (c1 * c2)};
 
 	_viewMatrix = vem::mat4{1.f};
@@ -71,6 +77,8 @@ const vem::mat4	&VeCamera::getInverseView(void) const {
 
 const vem::vec3	VeCamera::getPosition(void) const {
 	return (vem::vec3(
-		_inverseViewMatrix.m[3][0], _inverseViewMatrix.m[3][1], _inverseViewMatrix.m[3][2]
+		_inverseViewMatrix.m[3][0],
+		_inverseViewMatrix.m[3][1],
+		_inverseViewMatrix.m[3][2]
 	));
 }

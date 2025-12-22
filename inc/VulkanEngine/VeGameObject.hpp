@@ -18,27 +18,27 @@ struct PointLightComponent{
 };
 
 class VeGameObject{
-	private:
-		uint32_t	_id;
+private:
+	uint32_t	_id;
 
-		VeGameObject(uint32_t id);
-	public:
-		using Map = unordered_map<uint32_t, VeGameObject>;
+	VeGameObject(uint32_t id);
+public:
+	using Map = unordered_map<uint32_t, VeGameObject>;
 
-		vem::vec3						_color{};
-		TransformComponent				_transform{};
-		shared_ptr<VeModel>				_model{};
-		unique_ptr<PointLightComponent>	_pointLight = nullptr;
+	vem::vec3						_color{};
+	TransformComponent				_transform{};
+	shared_ptr<VeModel>				_model{};
+	unique_ptr<PointLightComponent>	_pointLight = nullptr;
 
-		VeGameObject(void);
-		~VeGameObject();
+	VeGameObject(void);
+	~VeGameObject();
 
-		VeGameObject(const VeGameObject &) = delete;
-		VeGameObject &operator=(const VeGameObject &) = delete;
-		VeGameObject(VeGameObject &&) = default;
-		VeGameObject &operator=(VeGameObject &&) = default;
+	VeGameObject(const VeGameObject &) = delete;
+	VeGameObject &operator=(const VeGameObject &) = delete;
+	VeGameObject(VeGameObject &&) = default;
+	VeGameObject &operator=(VeGameObject &&) = default;
 
-		static VeGameObject	createGameObject(void);
-		static VeGameObject	makePointLight(float intensity, float radius, vem::vec3 color);
-		const uint32_t		getId(void);
+	static VeGameObject	createGameObject(void);
+	static VeGameObject	makePointLight(float intensity, float r, vem::vec3 col);
+	const uint32_t		getId(void);
 };

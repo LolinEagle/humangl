@@ -18,7 +18,7 @@ bool	Controller::getTextureOn(void) const {
 	return (_textureOn);
 }
 
-void	Controller::moveInPlaneXZ(GLFWwindow *window, float dt, VeGameObject &gameObject){
+void	Controller::moveInPlaneXZ(GLFWwindow *window, float dt, VeGameObject &go){
 	// Escape
 	if (glfwGetKey(window, _keys.escape) == GLFW_PRESS) glfwSetWindowShouldClose(window, GLFW_TRUE);
 
@@ -37,11 +37,11 @@ void	Controller::moveInPlaneXZ(GLFWwindow *window, float dt, VeGameObject &gameO
 
 	// Rotation
 	if (vem::dot(rotate, rotate) > numeric_limits<float>::epsilon())
-		gameObject._transform.rotation += vem::vec3(_lookSpeed * dt) * vem::normalize(rotate);
-	gameObject._transform.rotation.x = vem::clamp(gameObject._transform.rotation.x, -1.5f, 1.5f);
-	gameObject._transform.rotation.y = vem::mod(gameObject._transform.rotation.y, TWO_PI);
+		go._transform.rotation += vem::vec3(_lookSpeed * dt) * vem::normalize(rotate);
+	go._transform.rotation.x = vem::clamp(go._transform.rotation.x, -1.5f, 1.5f);
+	go._transform.rotation.y = vem::mod(go._transform.rotation.y, TWO_PI);
 
-	float			yaw = gameObject._transform.rotation.y;
+	float			yaw = go._transform.rotation.y;
 	const vem::vec3	forwardDir{sin(yaw), 0.f, cos(yaw)};		// Forward direction
 	const vem::vec3	rightDir{forwardDir.z, 0.f, -forwardDir.x};	// Right direction
 	const vem::vec3	upDir{0.f, -1.f, 0.f};						// Up direction
@@ -65,7 +65,7 @@ void	Controller::moveInPlaneXZ(GLFWwindow *window, float dt, VeGameObject &gameO
 
 	// Translation
 	if (vem::dot(moveDir, moveDir) > numeric_limits<float>::epsilon())
-		gameObject._transform.translation += vem::vec3(_moveSpeed * dt) * vem::normalize(moveDir);
+		go._transform.translation += vem::vec3(_moveSpeed * dt) * vem::normalize(moveDir);
 
 	// Texture on
 	if (glfwGetKey(window, _keys.texture) == GLFW_PRESS && _textureOnPress == false){

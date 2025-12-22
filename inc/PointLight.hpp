@@ -15,17 +15,17 @@ struct PointLightPushConstants{
 };
 
 class PointLight{
-	private:
-		VeDevice				&_veDevice;
-		unique_ptr<VePipeline>	_vePipeline;
-		VkPipelineLayout		_pipelineLayout;
+private:
+	VeDevice				&_veDevice;
+	unique_ptr<VePipeline>	_vePipeline;
+	VkPipelineLayout		_pipelineLayout;
 
-		void	createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
-		void	createPipeline(VkRenderPass renderPass);
-	public:
-		PointLight(VeDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout layout);
-		~PointLight();
+	void	createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+	void	createPipeline(VkRenderPass renderPass);
+public:
+	PointLight(VeDevice &d, VkRenderPass rp, VkDescriptorSetLayout layout);
+	~PointLight();
 
-		void	update(FrameInfo &frameInfo, GlobalUbo &ubo);
-		void	render(FrameInfo &frameInfo);
+	void	update(FrameInfo &frameInfo, GlobalUbo &ubo);
+	void	render(FrameInfo &frameInfo);
 };

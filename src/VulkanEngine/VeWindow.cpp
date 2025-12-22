@@ -2,12 +2,12 @@
 
 using namespace std;
 
-void		VeWindow::framebufferResizedCallback(GLFWwindow *window, int width, int height){
+void		VeWindow::framebufferResizedCallback(GLFWwindow *window, int w, int h){
 	auto	veWindow = reinterpret_cast<VeWindow*>(glfwGetWindowUserPointer(window));
 
 	veWindow->_framebufferResized = true;
-	veWindow->_width = width;
-	veWindow->_height = height;
+	veWindow->_width = w;
+	veWindow->_height = h;
 }
 
 void		VeWindow::initWindow(void){
@@ -24,7 +24,7 @@ void		VeWindow::initWindow(void){
 	glfwSetFramebufferSizeCallback(_window, framebufferResizedCallback);
 }
 
-VeWindow::VeWindow(int width, int height) : _width(width), _height(height){
+VeWindow::VeWindow(int w, int h) : _width(w), _height(h){
 	initWindow();
 }
 

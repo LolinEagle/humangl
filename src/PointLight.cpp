@@ -36,10 +36,10 @@ void	PointLight::createPipeline(VkRenderPass renderPass){
 	);
 }
 
-PointLight::PointLight(VeDevice &device, VkRenderPass renderPass, VkDescriptorSetLayout layout)
-: _veDevice(device){
+PointLight::PointLight(VeDevice &d, VkRenderPass rp, VkDescriptorSetLayout layout)
+: _veDevice(d){
 	createPipelineLayout(layout);
-	createPipeline(renderPass);
+	createPipeline(rp);
 }
 
 PointLight::~PointLight(){
@@ -92,7 +92,7 @@ void	PointLight::render(FrameInfo &frameInfo){
 	);
 	// Iterate through sorted lights in reverse order
 	for (auto it = sorted.rbegin(); it != sorted.rend(); it++){
-		auto	&obj = frameInfo.gameObject.at(it->second);// Use obj id to find light object
+		auto	&obj = frameInfo.gameObject.at(it->second);// Find light object
 
 		PointLightPushConstants	push{};
 		push.position = vem::vec4(obj._transform.translation, 1.f);
