@@ -7,6 +7,7 @@
 #include <VePipeline.hpp>
 
 using namespace std;
+using DSLayout = VkDescriptorSetLayout;
 
 struct PointLightPushConstants{
 	vem::vec4	position{};
@@ -20,10 +21,10 @@ private:
 	unique_ptr<VePipeline>	_vePipeline;
 	VkPipelineLayout		_pipelineLayout;
 
-	void	createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+	void	createPipelineLayout(DSLayout globalSetLayout);
 	void	createPipeline(VkRenderPass renderPass);
 public:
-	PointLight(VeDevice &d, VkRenderPass rp, VkDescriptorSetLayout layout);
+	PointLight(VeDevice &d, VkRenderPass rp, DSLayout layout);
 	~PointLight();
 
 	void	update(FrameInfo &frameInfo, GlobalUbo &ubo);

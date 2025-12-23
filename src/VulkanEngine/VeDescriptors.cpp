@@ -6,10 +6,10 @@ VeDescriptorSetLayout::Builder::Builder(VeDevice &device): _device(device){
 }
 
 VeDescriptorSetLayout::Builder &VeDescriptorSetLayout::Builder::addBinding(
-	uint32_t binding,
+	uint binding,
 	VkDescriptorType descriptorType,
 	VkShaderStageFlags stageFlags,
-	uint32_t count
+	uint count
 ){
 	VkDescriptorSetLayoutBinding	layoutBinding{};
 	layoutBinding.binding = binding;
@@ -22,7 +22,7 @@ VeDescriptorSetLayout::Builder &VeDescriptorSetLayout::Builder::addBinding(
 	return (*this);
 }
 
-unique_ptr<VeDescriptorSetLayout> VeDescriptorSetLayout::Builder::build() const {
+unique_ptr<VeDescriptorSetLayout>	VeDescriptorSetLayout::Builder::build() const {
 	return (make_unique<VeDescriptorSetLayout>(_device, _bindings));
 }
 
@@ -34,7 +34,7 @@ VeDescriptorSetLayout::VeDescriptorSetLayout(VeDevice &device, Binding bindings)
 
 	VkDescriptorSetLayoutCreateInfo	info{};
 	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	info.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+	info.bindingCount = static_cast<uint>(setLayoutBindings.size());
 	info.pBindings = setLayoutBindings.data();
 
 	if (vkCreateDescriptorSetLayout(_device.device(), &info, nullptr, &_descriptorSetLayout) != 0)
@@ -55,7 +55,7 @@ VeDescriptorPool::Builder::Builder(VeDevice &device): _device(device){
 }
 
 VeDescriptorPool::Builder	&VeDescriptorPool::Builder::addPoolSize(
-	VkDescriptorType descriptorType, uint32_t count
+	VkDescriptorType descriptorType, uint count
 ){
 	_poolSizes.push_back({descriptorType, count});
 	return (*this);
@@ -68,24 +68,24 @@ VeDescriptorPool::Builder	&VeDescriptorPool::Builder::setPoolFlags(
 	return (*this);
 }
 
-VeDescriptorPool::Builder	&VeDescriptorPool::Builder::setMaxSets(uint32_t count){
+VeDescriptorPool::Builder	&VeDescriptorPool::Builder::setMaxSets(uint count){
 	_maxSets = count;
 	return (*this);
 }
 
-unique_ptr<VeDescriptorPool> VeDescriptorPool::Builder::build() const {
+unique_ptr<VeDescriptorPool>	VeDescriptorPool::Builder::build() const {
 	return (make_unique<VeDescriptorPool>(_device, _maxSets, _poolFlags, _poolSizes));
 }
 
 VeDescriptorPool::VeDescriptorPool(
 	VeDevice &device,
-	uint32_t maxSets,
+	uint maxSets,
 	VkDescriptorPoolCreateFlags poolFlags,
 	const vector<VkDescriptorPoolSize> &poolSizes
 ): _device(device){
 	VkDescriptorPoolCreateInfo	poolCreateInfo{};
 	poolCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	poolCreateInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolCreateInfo.poolSizeCount = static_cast<uint>(poolSizes.size());
 	poolCreateInfo.pPoolSizes = poolSizes.data();
 	poolCreateInfo.maxSets = maxSets;
 	poolCreateInfo.flags = poolFlags;
@@ -118,7 +118,7 @@ void	VeDescriptorPool::freeDescriptors(vector<VkDescriptorSet> &descriptors) con
 	vkFreeDescriptorSets(
 		_device.device(),
 		_descriptorPool,
-		static_cast<uint32_t>(descriptors.size()),
+		static_cast<uint>(descriptors.size()),
 		descriptors.data()
 	);
 }
@@ -133,7 +133,7 @@ VeDescriptorWriter::VeDescriptorWriter(VeDescriptorSetLayout &setLayout, VeDescr
 : _setLayout(setLayout), _pool(pool){
 }
 
-VeDescriptorWriter	&VeDescriptorWriter::writeBuffer(uint32_t bind, VkDescriptorBufferInfo *buffer){
+VeDescriptorWriter	&VeDescriptorWriter::writeBuffer(uint bind, VkDescriptorBufferInfo *buffer){
 	auto	&bindingDescription = _setLayout._bindings[bind];
 
 	VkWriteDescriptorSet	write{};
@@ -147,7 +147,7 @@ VeDescriptorWriter	&VeDescriptorWriter::writeBuffer(uint32_t bind, VkDescriptorB
 	return (*this);
 }
 
-VeDescriptorWriter	&VeDescriptorWriter::writeImage(uint32_t bind, VkDescriptorImageInfo *image){
+VeDescriptorWriter	&VeDescriptorWriter::writeImage(uint bind, VkDescriptorImageInfo *image){
 	auto	&bindingDescription = _setLayout._bindings[bind];
 
 	VkWriteDescriptorSet	write{};

@@ -24,7 +24,7 @@ struct PipelineConfigInfo{
 	VkPipelineDynamicStateCreateInfo		dynamicStateInfo;
 	VkPipelineLayout						pipelineLayout = nullptr;
 	VkRenderPass							renderPass = nullptr;
-	uint32_t								subpass = 0;
+	uint									subpass = 0;
 };
 
 class VePipeline{
@@ -42,7 +42,7 @@ private:
 		const string &fragFilepath,
 		const PipelineConfigInfo &configInfo
 	);
-	void	createShaderModule(const vector<char>& code, VkShaderModule *shaderModule);
+	void	createShaderModule(const vector<char>&, VkShaderModule*);
 public:
 	VePipeline(
 		VeDevice &device,

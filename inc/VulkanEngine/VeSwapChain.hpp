@@ -3,6 +3,9 @@
 #include <VeDevice.hpp>
 
 using namespace std;
+using Formats = vector<VkSurfaceFormatKHR>;
+using Modes = vector<VkPresentModeKHR>;
+using Caps = VkSurfaceCapabilitiesKHR;
 
 class VeSwapChain{
 private:
@@ -35,12 +38,12 @@ private:
 	void	createSyncObjects(void);
 
 	// Helper functions
-	VkSurfaceFormatKHR	chooseSwapSurfaceFormat(const vector<VkSurfaceFormatKHR> &format);
-	VkPresentModeKHR	chooseSwapPresentMode(const vector<VkPresentModeKHR> &present);
-	VkExtent2D			chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities);
+	VkSurfaceFormatKHR	chooseSwapSurfaceFormat(const Formats &format);
+	VkPresentModeKHR	chooseSwapPresentMode(const Modes &present);
+	VkExtent2D			chooseSwapExtent(const Caps &capabilities);
 public:
 	VeSwapChain(VeDevice &deviceRef, VkExtent2D extent);
-	VeSwapChain(VeDevice &deviceRef, VkExtent2D extent, shared_ptr<VeSwapChain> previous);
+	VeSwapChain(VeDevice&, VkExtent2D, shared_ptr<VeSwapChain>);
 	~VeSwapChain();
 
 	VkFramebuffer	getFrameBuffer(int index);
@@ -49,11 +52,11 @@ public:
 	size_t			imageCount(void);
 	VkFormat		getSwapChainImageFormat(void);
 	VkExtent2D		getSwapChainExtent(void);
-	uint32_t		width(void);
-	uint32_t		height(void);
+	uint			width(void);
+	uint			height(void);
 	float			extentAspectRatio(void);
 	VkFormat		findDepthFormat(void);
-	VkResult		acquireNextImage(uint32_t *imageIndex);
-	VkResult		submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *image);
+	VkResult		acquireNextImage(uint *imageIndex);
+	VkResult		submitCommandBuffers(const VkCommandBuffer*, uint*);
 	bool			compareSwapFormate(const VeSwapChain &swapChain) const;
 };

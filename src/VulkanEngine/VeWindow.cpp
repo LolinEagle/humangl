@@ -2,15 +2,17 @@
 
 using namespace std;
 
-void		VeWindow::framebufferResizedCallback(GLFWwindow *window, int w, int h){
-	auto	veWindow = reinterpret_cast<VeWindow*>(glfwGetWindowUserPointer(window));
+void	VeWindow::framebufferResizedCallback(GLFWwindow *window, int w, int h){
+	auto	veWindow = reinterpret_cast<VeWindow*>(
+		glfwGetWindowUserPointer(window)
+	);
 
 	veWindow->_framebufferResized = true;
 	veWindow->_width = w;
 	veWindow->_height = h;
 }
 
-void		VeWindow::initWindow(void){
+void	VeWindow::initWindow(void){
 	if (!glfwInit())
 		throw (runtime_error("failed to initialize GLFW"));
 	if (!glfwVulkanSupported())
@@ -34,7 +36,7 @@ VeWindow::~VeWindow(){
 }
 
 VkExtent2D	VeWindow::getExtent(void){
-	return {static_cast<uint32_t>(_width), static_cast<uint32_t>(_height)};
+	return {static_cast<uint>(_width), static_cast<uint>(_height)};
 }
 
 bool		VeWindow::shouldClose(void){
@@ -49,11 +51,11 @@ GLFWwindow	*VeWindow::getGLFWwindow(void) const {
 	return (_window);
 }
 
-void		VeWindow::resetWindowResizedFlag(void){
+void	VeWindow::resetWindowResizedFlag(void){
 	_framebufferResized = false;
 }
 
-void		VeWindow::createWindowSurface(VkInstance instance, VkSurfaceKHR *surface){
-	if (glfwCreateWindowSurface(instance, _window, nullptr, surface) != 0)
+void	VeWindow::createWindowSurface(VkInstance i, VkSurfaceKHR *surface){
+	if (glfwCreateWindowSurface(i, _window, nullptr, surface) != 0)
 		throw (runtime_error("failed to create window surface"));
 }

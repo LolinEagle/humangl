@@ -1,5 +1,7 @@
 #include <vem.hpp>
 
+using namespace std;
+
 namespace vem{
 
 vec2::vec2(void) : x(0), y(0){
@@ -210,29 +212,29 @@ float	dot(const vec4 &v1, const vec4 &v2){
 }
 
 vec2	normalize(const vec2 &v){
-	float length = std::sqrt(v.x * v.x + v.y * v.y);
+	float length = sqrt(v.x * v.x + v.y * v.y);
 	return (vec2(v.x / length, v.y / length));
 }
 vec3	normalize(const vec3 &v){
-	float length = std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+	float length = sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 	return (vec3(v.x / length, v.y / length, v.z / length));
 }
 vec4	normalize(const vec4 &v){
-	float length = std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w);
+	float length = sqrt(v.x * v.x + v.y * v.y + v.z * v.z + v.w * v.w);
 	return (vec4(v.x / length, v.y / length, v.z / length, v.w / length));
 }
 
 float	mod(float x, float y){
-	return (std::fmod(x, y));
+	return (fmod(x, y));
 }
 vec2	mod(const vec2 &v, float y){
-	return (vec2(std::fmod(v.x, y), std::fmod(v.y, y)));
+	return (vec2(fmod(v.x, y), fmod(v.y, y)));
 }
 vec3	mod(const vec3 &v, float y){
-	return (vec3(std::fmod(v.x, y), std::fmod(v.y, y), std::fmod(v.z, y)));
+	return (vec3(fmod(v.x, y), fmod(v.y, y), fmod(v.z, y)));
 }
 vec4	mod(const vec4 &v, float y){
-	return (vec4(std::fmod(v.x, y), std::fmod(v.y, y), std::fmod(v.z, y), std::fmod(v.w, y)));
+	return (vec4(fmod(v.x, y), fmod(v.y, y), fmod(v.z, y), fmod(v.w, y)));
 }
 
 float	radians(float degrees){
@@ -241,14 +243,14 @@ float	radians(float degrees){
 
 vec2	rotate(const vec2 &v, float angle){
 	float	rad = radians(angle);
-	float	cos_a = std::cos(rad);
-	float	sin_a = std::sin(rad);
+	float	cos_a = cos(rad);
+	float	sin_a = sin(rad);
 	return (vec2(v.x * cos_a - v.y * sin_a, v.x * sin_a + v.y * cos_a));
 }
 vec3	rotate(const vec3 &v, float angle, const vec3 &axis){
 	float	rad = radians(angle);
-	float	cos_a = std::cos(rad);
-	float	sin_a = std::sin(rad);
+	float	cos_a = cos(rad);
+	float	sin_a = sin(rad);
 	float	one_minus_cos = 1.f - cos_a;
 
 	vec3	norm_axis = normalize(axis);
@@ -274,8 +276,8 @@ vec4 rotate(const vec4 &v, float angle, const vec3 &axis){
 }
 mat3 rotate(const mat3 &v, float angle, const vec3 &axis){
 	float	rad = radians(angle);
-	float	cos_a = std::cos(rad);
-	float	sin_a = std::sin(rad);
+	float	cos_a = cos(rad);
+	float	sin_a = sin(rad);
 	float	one_minus_cos = 1.f - cos_a;
 
 	vec3	norm_axis = normalize(axis);
@@ -297,8 +299,8 @@ mat3 rotate(const mat3 &v, float angle, const vec3 &axis){
 }
 mat4 rotate(const mat4 &v, float angle, const vec3 &axis){
 	float	rad = radians(angle);
-	float	cos_a = std::cos(rad);
-	float	sin_a = std::sin(rad);
+	float	cos_a = cos(rad);
+	float	sin_a = sin(rad);
 	float	one_minus_cos = 1.f - cos_a;
 
 	vec3	norm_axis = normalize(axis);
@@ -320,7 +322,7 @@ mat4 rotate(const mat4 &v, float angle, const vec3 &axis){
 }
 
 float	clamp(float x, float minVal, float maxVal){
-	return (std::max(minVal, std::min(x, maxVal)));
+	return (max(minVal, min(x, maxVal)));
 }
 vec2	clamp(const vec2 &v, float minVal, float maxVal){
 	return (vec2(clamp(v.x, minVal, maxVal), clamp(v.y, minVal, maxVal)));

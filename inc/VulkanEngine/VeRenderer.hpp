@@ -18,9 +18,9 @@ private:
 	void	freeCommandBuffers(void);
 	void	recreateSwapChain(void);
 public:
-	uint32_t	_currentImageIndex;
-	int			_currentFrameIndex = 0;
-	bool		_isFrameStarted;
+	uint	_currentImageIndex;
+	int		_currentFrameIndex = 0;
+	bool	_isFrameStarted;
 
 	VeRenderer(VeWindow &veWindow, VeDevice &veDevice);
 	~VeRenderer();

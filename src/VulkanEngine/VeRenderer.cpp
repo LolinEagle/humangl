@@ -7,9 +7,11 @@ void	VeRenderer::createCommandBuffers(void){
 	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandPool = _veDevice.getCommandPool();
-	allocInfo.commandBufferCount = static_cast<uint32_t>(_commandBuffers.size());
+	allocInfo.commandBufferCount = static_cast<uint>(_commandBuffers.size());
 
-	if (vkAllocateCommandBuffers(_veDevice.device(), &allocInfo, _commandBuffers.data()) != 0)
+	if (vkAllocateCommandBuffers(
+		_veDevice.device(), &allocInfo, _commandBuffers.data()
+	) != 0)
 		throw (runtime_error("failed to allocate command buffers"));
 }
 
@@ -17,7 +19,7 @@ void	VeRenderer::freeCommandBuffers(void){
 	vkFreeCommandBuffers(
 		_veDevice.device(),
 		_veDevice.getCommandPool(),
-		static_cast<uint32_t>(_commandBuffers.size()),
+		static_cast<uint>(_commandBuffers.size()),
 		_commandBuffers.data()
 	);
 	_commandBuffers.clear();
@@ -33,12 +35,12 @@ void	VeRenderer::recreateSwapChain(void){
 	vkDeviceWaitIdle(_veDevice.device());
 	if (_veSwapChain == nullptr){
 		_veSwapChain = make_unique<VeSwapChain>(_veDevice, extent);
-	} else {
-		shared_ptr<VeSwapChain>	oldSwapChain = move(_veSwapChain);
-		_veSwapChain = make_unique<VeSwapChain>(_veDevice, extent, oldSwapChain);
-		if (!oldSwapChain->compareSwapFormate(*_veSwapChain.get()))
-			throw (runtime_error("swap chain image (or depth) format has changed"));
+		return ;
 	}
+	shared_ptr<VeSwapChain>	oldSwapChain = move(_veSwapChain);
+	_veSwapChain = make_unique<VeSwapChain>(_veDevice, extent, oldSwapChain);
+	if (!oldSwapChain->compareSwapFormate(*_veSwapChain.get()))
+		throw (runtime_error("swap chain image (or depth) format has changed"));
 }
 
 VeRenderer::VeRenderer(VeWindow &veWindow, VeDevice &veDevice)
@@ -66,23 +68,25 @@ VkCommandBuffer	VeRenderer::beginFrame(void){
 		throw (runtime_error("failed to acquire swap chain image"));
 	_isFrameStarted = true;
 
-	auto	commandBuffer = getCurrentCommandBuffer();
+	auto	cb = getCurrentCommandBuffer();
 
 	VkCommandBufferBeginInfo	beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 
-	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != 0)
+	if (vkBeginCommandBuffer(cb, &beginInfo) != 0)
 		throw (runtime_error("failed to begin recording command buffer"));
-	return (commandBuffer);
+	return (cb);
 }
 
 void			VeRenderer::endFrame(void){
-	auto	commandBuffer = getCurrentCommandBuffer();
+	auto	cb = getCurrentCommandBuffer();
 
-	if (vkEndCommandBuffer(commandBuffer) != 0)
+	if (vkEndCommandBuffer(cb) != 0)
 		throw (runtime_error("failed to record command buffer"));
 
-	auto	result = _veSwapChain->submitCommandBuffers(&commandBuffer, &_currentImageIndex);
+	auto	result = _veSwapChain->submitCommandBuffers(
+		&cb, &_currentImageIndex
+	);
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR ||
 		result == VK_SUBOPTIMAL_KHR ||
@@ -96,38 +100,38 @@ void			VeRenderer::endFrame(void){
 	_currentFrameIndex = (_currentFrameIndex + 1) % MAX_FRAMES;
 }
 
-void			VeRenderer::beginSwapChainRenderPass(VkCommandBuffer commandBuffer){
+void			VeRenderer::beginSwapChainRenderPass(VkCommandBuffer cb){
 	array<VkClearValue, 2>	clearValues{};
 	clearValues[0].color = {0.01, 0.01, 0.01, 1};
 	clearValues[1].depthStencil = {1.0f, 0};
 
-	VkRenderPassBeginInfo	renderPassInfo{};
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassInfo.renderPass = _veSwapChain->getRenderPass();
-	renderPassInfo.framebuffer = _veSwapChain->getFrameBuffer(_currentImageIndex);
-	renderPassInfo.renderArea.offset = {0, 0};
-	renderPassInfo.renderArea.extent = _veSwapChain->getSwapChainExtent();
-	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-	renderPassInfo.pClearValues = clearValues.data();
+	VkRenderPassBeginInfo	rpbi{};
+	rpbi.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	rpbi.renderPass = _veSwapChain->getRenderPass();
+	rpbi.framebuffer = _veSwapChain->getFrameBuffer(_currentImageIndex);
+	rpbi.renderArea.offset = {0, 0};
+	rpbi.renderArea.extent = _veSwapChain->getSwapChainExtent();
+	rpbi.clearValueCount = static_cast<uint>(clearValues.size());
+	rpbi.pClearValues = clearValues.data();
 
-	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(cb, &rpbi, VK_SUBPASS_CONTENTS_INLINE);
 
-	VkViewport	viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = static_cast<float>(_veSwapChain->getSwapChainExtent().width);
-	viewport.height = static_cast<float>(_veSwapChain->getSwapChainExtent().height);
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
+	VkViewport	v{};
+	v.x = 0.0f;
+	v.y = 0.0f;
+	v.width = static_cast<float>(_veSwapChain->getSwapChainExtent().width);
+	v.height = static_cast<float>(_veSwapChain->getSwapChainExtent().height);
+	v.minDepth = 0.0f;
+	v.maxDepth = 1.0f;
 
 	VkRect2D	scissor{{0, 0}, _veSwapChain->getSwapChainExtent()};
 
-	vkCmdSetViewport(commandBuffer, 0, 1, &viewport);
-	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
+	vkCmdSetViewport(cb, 0, 1, &v);
+	vkCmdSetScissor(cb, 0, 1, &scissor);
 }
 
-void			VeRenderer::endSwapChainRenderPass(VkCommandBuffer commandBuffer){
-	vkCmdEndRenderPass(commandBuffer);
+void			VeRenderer::endSwapChainRenderPass(VkCommandBuffer cb){
+	vkCmdEndRenderPass(cb);
 }
 
 VkRenderPass	VeRenderer::getSwapchainRenderPass(void) const {

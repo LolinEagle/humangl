@@ -2,7 +2,7 @@
 
 using namespace std;
 
-vector<VkVertexInputBindingDescription>		VeModel::Vertex::getBindingDescriptions(void){
+Bindings	VeModel::Vertex::getBindingDescriptions(void){
 	vector<VkVertexInputBindingDescription>		bindingDescription(1);
 	bindingDescription[0].binding = 0;
 	bindingDescription[0].stride = sizeof(Vertex);
@@ -10,15 +10,15 @@ vector<VkVertexInputBindingDescription>		VeModel::Vertex::getBindingDescriptions
 	return (bindingDescription);
 }
 
-vector<VkVertexInputAttributeDescription>	VeModel::Vertex::getAttributeDescriptions(void){
-	vector<VkVertexInputAttributeDescription>	attributeDescription{};
+Attributes	VeModel::Vertex::getAttributeDescriptions(void){
+	vector<VkVertexInputAttributeDescription>	r{};
 
 	// {binding, location, format, offset}
-	attributeDescription.push_back({0 , 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
-	attributeDescription.push_back({1 , 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
-	attributeDescription.push_back({2 , 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
-	attributeDescription.push_back({3 , 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
-	return (attributeDescription);
+	r.push_back({0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, position)});
+	r.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
+	r.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
+	r.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
+	return (r);
 }
 
 bool	VeModel::Vertex::operator==(const Vertex &other) const {
@@ -53,11 +53,11 @@ void	VeModel::Builder::loadModel(const string &filepath, const int &color){
 			iss >> uv.x >> uv.y;
 			uvs.push_back(uv);
 		} else if (token == "f"){// Face
-			string		vertexIndices, indexStr;// Vertex indices, temporary index
+			string		vertexIndices, indexStr;// Indices, temporary index
 			int			position, uv, normal;	// Position, texture, normal
-			size_t		found;					// Found if face have uv and normal
-			uint32_t	x[4];					// Keep indices for square face
-			int			verticeAdded = 0;		// How many vertices have be added
+			size_t		found;					// Found if face have uv & normal
+			uint		x[4];					// Keep indices for square face
+			int			verticeAdded = 0;		// How many vertices have be add
 			static int	si = 0;
 
 			for (int i = 0; i < 4; i++){
@@ -72,8 +72,8 @@ void	VeModel::Builder::loadModel(const string &filepath, const int &color){
 					indices.push_back(x[2]);
 				}
 
-				istringstream	indicesStream(vertexIndices);	// Make it a input string stream
-				found = vertexIndices.find('/');				// Find if face have uv and normal
+				istringstream	indicesStream(vertexIndices);
+				found = vertexIndices.find('/');// Find if face have uv & normal
 
 				// Get from line vertex indices
 				if (found != string::npos){
@@ -152,7 +152,7 @@ void	VeModel::Builder::loadModel(const string &filepath, const int &color){
 	file.close();
 }
 
-void	VeModel::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height){
+void	VeModel::copyBufferToImage(VkBuffer buf, VkImage image, uint w, uint h){
 	VkCommandBuffer	commandBuffer = _veDevice.beginSingleTimeCommands();
 
 	VkBufferImageCopy	region{};
@@ -164,11 +164,11 @@ void	VeModel::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, 
 	region.imageSubresource.baseArrayLayer = 0;
 	region.imageSubresource.layerCount = 1;
 	region.imageOffset = {0, 0, 0};
-	region.imageExtent = {width, height, 1};
+	region.imageExtent = {w, h, 1};
 
 	vkCmdCopyBufferToImage(
 		commandBuffer,
-		buffer,
+		buf,
 		image,
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		1,
@@ -178,7 +178,7 @@ void	VeModel::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, 
 }
 
 void	VeModel::transitionImageLayout(
-	VkImage image,VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout
+	VkImage image, VkFormat f, VkImageLayout oldLayout, VkImageLayout newLayout
 ){
 	VkCommandBuffer	commandBuffer = _veDevice.beginSingleTimeCommands();
 
@@ -229,7 +229,7 @@ void	VeModel::transitionImageLayout(
 }
 
 void	VeModel::createImage(
-	uint32_t width, uint32_t height,
+	uint w, uint h,
 	VkFormat format,
 	VkImageTiling tiling,
 	VkImageUsageFlags usage,
@@ -240,8 +240,8 @@ void	VeModel::createImage(
 	VkImageCreateInfo	imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	imageInfo.imageType = VK_IMAGE_TYPE_2D;
-	imageInfo.extent.width = width;
-	imageInfo.extent.height = height;
+	imageInfo.extent.width = w;
+	imageInfo.extent.height = h;
 	imageInfo.extent.depth = 1;
 	imageInfo.mipLevels = 1;
 	imageInfo.arrayLayers = 1;
@@ -258,25 +258,27 @@ void	VeModel::createImage(
 	VkMemoryRequirements	memRequirements;
 	vkGetImageMemoryRequirements(_veDevice.device(), image, &memRequirements);
 
-	VkMemoryAllocateInfo	allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = _veDevice.findMemoryType(memRequirements.memoryTypeBits, properties);
+	VkMemoryAllocateInfo	info{};
+	info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	info.allocationSize = memRequirements.size;
+	info.memoryTypeIndex =
+		_veDevice.findMemoryType(memRequirements.memoryTypeBits, properties);
 
-	if (vkAllocateMemory(_veDevice.device(), &allocInfo, nullptr, &imageMemory) != 0)
+	if (vkAllocateMemory(_veDevice.device(), &info, nullptr, &imageMemory) != 0)
 		throw (runtime_error("failed to allocate image memory"));
 
 	vkBindImageMemory(_veDevice.device(), image, imageMemory, 0);
 }
 
-unsigned char	*loadImage(const char *filename, int *x, int *y, int *comp, int req_comp){
+uchar	*loadImage(const char *filename, int *x, int *y, int *comp, int req){
 	FILE	*fp = fopen(filename, "rb");
 	if (!fp){
 		cerr << "Error: Failed to open file " << filename << endl;
 		return (NULL);
 	}
 
-	png_structp	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+	png_structp	png_ptr =
+		png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png_ptr){
 		fclose(fp);
 		cerr << "Error: png_create_read_struct failed" << endl;
@@ -301,15 +303,15 @@ unsigned char	*loadImage(const char *filename, int *x, int *y, int *comp, int re
 	*x = png_get_image_width(png_ptr, info_ptr);
 	*y = png_get_image_height(png_ptr, info_ptr);
 	*comp = png_get_channels(png_ptr, info_ptr);
-	if (req_comp != 0 && req_comp != *comp){
+	if (req != 0 && req != *comp){
 		png_set_palette_to_rgb(png_ptr);
 		png_set_filler(png_ptr, 0xFF, PNG_FILLER_AFTER);
 		png_read_update_info(png_ptr, info_ptr);
-		*comp = req_comp;
+		*comp = req;
 	}
 
-	unsigned char	*image_data = static_cast<unsigned char*>(
-		malloc(sizeof(unsigned char) * (*x) * (*y) * (*comp))
+	uchar	*image_data = static_cast<uchar*>(
+		malloc(sizeof(uchar) * (*x) * (*y) * (*comp))
 	);
 
 	if (!image_data){
@@ -346,7 +348,7 @@ void	VeModel::createTextureImages(const int &texture){
 	if (texture == 0) filename = "model/texture/LolinEagle.png";
 	else if (texture == 1) filename = "model/texture/Stone.png";
 	else filename = "model/texture/Wood.png" ;
-	unsigned char	*pixels = loadImage(
+	uchar	*pixels = loadImage(
 		filename.c_str(),
 		&texWidth,
 		&texHeight,
@@ -358,20 +360,21 @@ void	VeModel::createTextureImages(const int &texture){
 		throw (runtime_error("image failed to load"));
 
 	VkDeviceSize	imageSize = texWidth * texHeight * 4;
-	VkBuffer		stagingBuffer;
-	VkDeviceMemory	stagingBufferMemory;
+	VkBuffer		staging;
+	VkDeviceMemory	stagingMemory;
 	void			*data;
 
 	_veDevice.createBuffer(
 		imageSize,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-		stagingBuffer,
-		stagingBufferMemory
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+		staging,
+		stagingMemory
 	);
-	vkMapMemory(_veDevice.device(), stagingBufferMemory, 0, imageSize, 0, &data);
+	vkMapMemory(_veDevice.device(), stagingMemory, 0, imageSize, 0, &data);
 	memcpy(data, pixels, static_cast<size_t>(imageSize));
-	vkUnmapMemory(_veDevice.device(), stagingBufferMemory);
+	vkUnmapMemory(_veDevice.device(), stagingMemory);
 	free(pixels);
 	createImage(
 		texWidth,
@@ -390,10 +393,10 @@ void	VeModel::createTextureImages(const int &texture){
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
 	);
 	copyBufferToImage(
-		stagingBuffer,
+		staging,
 		_textureImage,
-		static_cast<uint32_t>(texWidth),
-		static_cast<uint32_t>(texHeight)
+		static_cast<uint>(texWidth),
+		static_cast<uint>(texHeight)
 	);
 	transitionImageLayout(
 		_textureImage,
@@ -401,8 +404,8 @@ void	VeModel::createTextureImages(const int &texture){
 		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
 	);
-	vkDestroyBuffer(_veDevice.device(), stagingBuffer, nullptr);
-	vkFreeMemory(_veDevice.device(), stagingBufferMemory, nullptr);
+	vkDestroyBuffer(_veDevice.device(), staging, nullptr);
+	vkFreeMemory(_veDevice.device(), stagingMemory, nullptr);
 }
 
 void	VeModel::createTextureImageView(void){
@@ -417,7 +420,9 @@ void	VeModel::createTextureImageView(void){
 	viewInfo.subresourceRange.baseArrayLayer = 0;
 	viewInfo.subresourceRange.layerCount = 1;
 
-	if (vkCreateImageView(_veDevice.device(), &viewInfo, nullptr, &_textureImageView) != 0)
+	if (vkCreateImageView(
+		_veDevice.device(), &viewInfo, nullptr, &_textureImageView
+	) != 0)
 		throw (runtime_error("failed to create texture image view"));
 }
 
@@ -440,27 +445,30 @@ void	VeModel::createTextureSampler(void){
 	samplerInfo.minLod = 0.f;
 	samplerInfo.maxLod = 0.f;
 
-	if (vkCreateSampler(_veDevice.device(), &samplerInfo, nullptr, &_textureSampler) != 0)
+	if (vkCreateSampler(
+		_veDevice.device(), &samplerInfo, nullptr, &_textureSampler
+	) != 0)
 		throw (runtime_error("failed to create a sampler"));
 }
 
 void	VeModel::createVertexBuffers(const vector<Vertex> &vertices){
-	_vertexCount = static_cast<uint32_t>(vertices.size());
+	_vertexCount = static_cast<uint>(vertices.size());
 	if (_vertexCount < 3)
 		throw (runtime_error("vertex count must be at least 3"));
 	
 	VkDeviceSize	bufferSize = sizeof(vertices[0]) * _vertexCount;
-	uint32_t		vertexSize = sizeof(vertices[0]);
-	VeBuffer		stagingBuffer{
+	uint			vertexSize = sizeof(vertices[0]);
+	VeBuffer		staging{
 		_veDevice,
 		vertexSize,
 		_vertexCount,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	};
 
-	stagingBuffer.map();
-	stagingBuffer.writeToBuffer((void*)vertices.data());
+	staging.map();
+	staging.writeToBuffer((void*)vertices.data());
 	_vertexBuffer = make_unique<VeBuffer>(
 		_veDevice,
 		vertexSize,
@@ -468,27 +476,30 @@ void	VeModel::createVertexBuffers(const vector<Vertex> &vertices){
 		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 	);
-	_veDevice.copyBuffer(stagingBuffer.getBuffer(), _vertexBuffer->getBuffer(), bufferSize);
+	_veDevice.copyBuffer(
+		staging.getBuffer(), _vertexBuffer->getBuffer(), bufferSize
+	);
 }
 
-void	VeModel::createIndexBuffers(const vector<uint32_t> &indices){
-	_indexCount = static_cast<uint32_t>(indices.size());
+void	VeModel::createIndexBuffers(const vector<uint> &indices){
+	_indexCount = static_cast<uint>(indices.size());
 	_hasIndexBuffer = _indexCount > 0;
 	if (!_hasIndexBuffer)
 		return ;
 	
 	VkDeviceSize	bufferSize = sizeof(indices[0]) * _indexCount;
-	uint32_t		indexSize = sizeof(indices[0]);
-	VeBuffer		stagingBuffer{
+	uint			indexSize = sizeof(indices[0]);
+	VeBuffer		staging{
 		_veDevice,
 		indexSize,
 		_indexCount,
 		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 	};
 
-	stagingBuffer.map();
-	stagingBuffer.writeToBuffer((void*)indices.data());
+	staging.map();
+	staging.writeToBuffer((void*)indices.data());
 	_indexBuffer = make_unique<VeBuffer>(
 		_veDevice,
 		indexSize,
@@ -496,23 +507,26 @@ void	VeModel::createIndexBuffers(const vector<uint32_t> &indices){
 		VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 	);
-	_veDevice.copyBuffer(stagingBuffer.getBuffer(), _indexBuffer->getBuffer(), bufferSize);
+	_veDevice.copyBuffer(
+		staging.getBuffer(), _indexBuffer->getBuffer(), bufferSize
+	);
 }
 
 unique_ptr<VeModel>	VeModel::createModelFromFile(
-	VeDevice &device, const string &filepath, const int &color, const int &texture
+	VeDevice &device, const string &file, const int &color, const int &texture
 ){
 	Builder	builder{};
-	builder.loadModel(filepath, color);
+	builder.loadModel(file, color);
 	return (make_unique<VeModel>(device, builder, texture));
 }
 
-VeModel::VeModel(VeDevice &device, const VeModel::Builder &builder, const int &texture) : _veDevice(device){
-	createTextureImages(texture);
+VeModel::VeModel(VeDevice &device, const VeModel::Builder &b, const int &t)
+: _veDevice(device){
+	createTextureImages(t);
 	createTextureImageView();
 	createTextureSampler();
-	createVertexBuffers(builder.vertices);
-	createIndexBuffers(builder.indices);
+	createVertexBuffers(b.vertices);
+	createIndexBuffers(b.indices);
 }
 
 VeModel::~VeModel(){
@@ -522,20 +536,20 @@ VeModel::~VeModel(){
 	vkFreeMemory(_veDevice.device(), _textureImageMemory, nullptr);
 }
 
-void	VeModel::bind(VkCommandBuffer commandBuffer){
+void	VeModel::bind(VkCommandBuffer cb){
 	VkBuffer		buffers[] = {_vertexBuffer->getBuffer()};
 	VkDeviceSize	offsets[] = {0};
 
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, buffers, offsets);
+	vkCmdBindVertexBuffers(cb, 0, 1, buffers, offsets);
 	if (_hasIndexBuffer)
-		vkCmdBindIndexBuffer(commandBuffer, _indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(cb, _indexBuffer->getBuffer(), 0, (VkIndexType)1);
 }
 
-void	VeModel::draw(VkCommandBuffer commandBuffer){
+void	VeModel::draw(VkCommandBuffer cb){
 	if (_hasIndexBuffer)
-		vkCmdDrawIndexed(commandBuffer, _indexCount, 1, 0, 0, 0);
+		vkCmdDrawIndexed(cb, _indexCount, 1, 0, 0, 0);
 	else
-		vkCmdDraw(commandBuffer, _vertexCount, 1, 0, 0);
+		vkCmdDraw(cb, _vertexCount, 1, 0, 0);
 }
 
 VkDescriptorImageInfo	VeModel::descriptorImageInfo(void){

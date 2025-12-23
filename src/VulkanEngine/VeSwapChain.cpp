@@ -16,8 +16,8 @@ void	VeSwapChain::createSwapChain(void){
 	VkSurfaceFormatKHR		surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
 	VkPresentModeKHR		presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
 	VkExtent2D				extent = chooseSwapExtent(swapChainSupport.capabilities);
-	uint32_t				imageCount = swapChainSupport.capabilities.minImageCount + 1;
-	const uint32_t			maxImageCount = swapChainSupport.capabilities.maxImageCount;
+	uint					imageCount = swapChainSupport.capabilities.minImageCount + 1;
+	const uint				maxImageCount = swapChainSupport.capabilities.maxImageCount;
 
 	if (maxImageCount > 0 && imageCount > maxImageCount)
 		imageCount = maxImageCount;
@@ -33,7 +33,7 @@ void	VeSwapChain::createSwapChain(void){
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	QueueFamilyIndices	indices = _device.findPhysicalQueueFamilies();
-	uint32_t			queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
+	uint				queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
 
 	if (indices.graphicsFamily != indices.presentFamily){
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
@@ -180,7 +180,7 @@ void	VeSwapChain::createRenderPass(void){
 
 	VkRenderPassCreateInfo	renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	renderPassInfo.attachmentCount = static_cast<uint>(attachments.size());
 	renderPassInfo.pAttachments = attachments.data();
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
@@ -200,7 +200,7 @@ void	VeSwapChain::createFramebuffers(void){
 		VkFramebufferCreateInfo	framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		framebufferInfo.renderPass = _renderPass;
-		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		framebufferInfo.attachmentCount = static_cast<uint>(attachments.size());
 		framebufferInfo.pAttachments = attachments.data();
 		framebufferInfo.width = swapChainExtent.width;
 		framebufferInfo.height = swapChainExtent.height;
@@ -229,7 +229,7 @@ void	VeSwapChain::createSyncObjects(void){
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	for (uint32_t i = 0; i < MAX_FRAMES; i++){
+	for (uint i = 0; i < MAX_FRAMES; i++){
 		if (
 			vkCreateSemaphore(_device.device(), &si, nullptr, &_imageAvailableSemaphores[i]) != 0 ||
 			vkCreateSemaphore(_device.device(), &si, nullptr, &_renderFinishedSemaphores[i]) != 0 ||
@@ -239,7 +239,7 @@ void	VeSwapChain::createSyncObjects(void){
 	}
 }
 
-VkSurfaceFormatKHR	VeSwapChain::chooseSwapSurfaceFormat(const vector<VkSurfaceFormatKHR> &format){
+VkSurfaceFormatKHR	VeSwapChain::chooseSwapSurfaceFormat(const Formats &format){
 	for (const auto &availableFormat : format){
 		if (
 			availableFormat.format == VK_FORMAT_B8G8R8A8_SRGB &&
@@ -250,7 +250,7 @@ VkSurfaceFormatKHR	VeSwapChain::chooseSwapSurfaceFormat(const vector<VkSurfaceFo
 	return (format[0]);
 }
 
-VkPresentModeKHR	VeSwapChain::chooseSwapPresentMode(const vector<VkPresentModeKHR> &present){
+VkPresentModeKHR	VeSwapChain::chooseSwapPresentMode(const Modes &present){
 	// Present mode: Mailbox
 	const auto	&presentMode = VK_PRESENT_MODE_MAILBOX_KHR;
 
@@ -267,8 +267,8 @@ VkPresentModeKHR	VeSwapChain::chooseSwapPresentMode(const vector<VkPresentModeKH
 	return (VK_PRESENT_MODE_FIFO_KHR);
 }
 
-VkExtent2D			VeSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities){
-	if (capabilities.currentExtent.width != numeric_limits<uint32_t>::max()){
+VkExtent2D			VeSwapChain::chooseSwapExtent(const Caps &capabilities){
+	if (capabilities.currentExtent.width != numeric_limits<uint>::max()){
 		return (capabilities.currentExtent);
 	} else {
 		VkExtent2D	actualExtent = _windowExtent;
@@ -344,11 +344,11 @@ VkExtent2D		VeSwapChain::getSwapChainExtent(void){
 	return (_swapChainExtent);
 }
 
-uint32_t		VeSwapChain::width(void){
+uint			VeSwapChain::width(void){
 	return (_swapChainExtent.width);
 }
 
-uint32_t		VeSwapChain::height(void){
+uint			VeSwapChain::height(void){
 	return (_swapChainExtent.height);
 }
 
@@ -364,19 +364,19 @@ VkFormat		VeSwapChain::findDepthFormat(void){
 	));
 }
 
-VkResult		VeSwapChain::acquireNextImage(uint32_t *imageIndex){
+VkResult		VeSwapChain::acquireNextImage(uint *imageIndex){
 	vkWaitForFences(
 		_device.device(),
 		1,
 		&_inFlightFences[_currentFrame],
 		VK_TRUE,
-		numeric_limits<uint64_t>::max()
+		numeric_limits<ulong>::max()
 	);
 
 	VkResult	result = vkAcquireNextImageKHR(
 		_device.device(),
 		_swapChain,
-		numeric_limits<uint64_t>::max(),
+		numeric_limits<ulong>::max(),
 		_imageAvailableSemaphores[_currentFrame],// Must be a not signaled semaphore
 		VK_NULL_HANDLE,
 		imageIndex
@@ -385,7 +385,7 @@ VkResult		VeSwapChain::acquireNextImage(uint32_t *imageIndex){
 	return (result);
 }
 
-VkResult		VeSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint32_t *image){
+VkResult		VeSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint *image){
 	if (_imagesInFlight[*image] != VK_NULL_HANDLE) 
 		vkWaitForFences(_device.device(), 1, &_imagesInFlight[*image], VK_TRUE, UINT64_MAX);
 	_imagesInFlight[*image] = _inFlightFences[_currentFrame];

@@ -7,6 +7,7 @@
 #include <VePipeline.hpp>
 
 using namespace std;
+using DSLayout = VkDescriptorSetLayout;
 
 struct PushConstantData{
 	vem::mat4	modelMatrix{1.f};
@@ -19,10 +20,10 @@ private:
 	unique_ptr<VePipeline>	_vePipeline;
 	VkPipelineLayout		_pipelineLayout;
 
-	void	createPipelineLayout(VkDescriptorSetLayout globalSetLayout);
+	void	createPipelineLayout(DSLayout globalSetLayout);
 	void	createPipeline(VkRenderPass renderPass);
 public:
-	SimpleRender(VeDevice &d, VkRenderPass rp, VkDescriptorSetLayout layout);
+	SimpleRender(VeDevice &d, VkRenderPass rp, DSLayout layout);
 	~SimpleRender();
 
 	void	renderObjects(FrameInfo &frameInfo);

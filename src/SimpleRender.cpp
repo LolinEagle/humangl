@@ -1,21 +1,24 @@
 #include <SimpleRender.hpp>
 
-void	SimpleRender::createPipelineLayout(VkDescriptorSetLayout globalSetLayout){
+void	SimpleRender::createPipelineLayout(DSLayout gSetLayout){
 	VkPushConstantRange	pushConstantRange{};
-	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	pushConstantRange.stageFlags =
+		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	pushConstantRange.offset = 0;
 	pushConstantRange.size = sizeof(PushConstantData);
 
-	vector<VkDescriptorSetLayout>	descriptorSetLayouts{globalSetLayout};
+	vector<DSLayout>	descriptorSetLayouts{gSetLayout};
 
 	VkPipelineLayoutCreateInfo	layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	layoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+	layoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
 	layoutInfo.pSetLayouts = descriptorSetLayouts.data();
 	layoutInfo.pushConstantRangeCount = 1;
 	layoutInfo.pPushConstantRanges = &pushConstantRange;
 
-	if (vkCreatePipelineLayout(_veDevice.device(), &layoutInfo, nullptr, &_pipelineLayout) != 0)
+	if (vkCreatePipelineLayout(
+		_veDevice.device(), &layoutInfo, nullptr, &_pipelineLayout
+	) != 0)
 		throw (runtime_error("failed to create pipeline layout"));
 }
 
@@ -33,7 +36,7 @@ void	SimpleRender::createPipeline(VkRenderPass renderPass){
 	);
 }
 
-SimpleRender::SimpleRender(VeDevice &d, VkRenderPass rp, VkDescriptorSetLayout layout)
+SimpleRender::SimpleRender(VeDevice &d, VkRenderPass rp, DSLayout layout)
 : _veDevice(d){
 	createPipelineLayout(layout);
 	createPipeline(rp);

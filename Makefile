@@ -22,7 +22,7 @@ RM			=	rm -rf
 GLSLC		=	./shader/glslc
 
 # Flags
-CPP_FLAGS	=	-std=c++17 -MMD
+CPP_FLAGS	=	-std=c++20 -MMD
 LIB_FLAGS	=	-lglfw -lvulkan -ldl -lpthread -lpng
 X11_FLAGS	=	-lX11 -lXxf86vm -lXrandr -lXi
 

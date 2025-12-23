@@ -21,6 +21,6 @@ public:
 	bool		wasWindowResized(void);
 	GLFWwindow	*getGLFWwindow(void) const;
 
-	void		resetWindowResizedFlag(void);
-	void		createWindowSurface(VkInstance instance, VkSurfaceKHR *surface);
+	void	resetWindowResizedFlag(void);
+	void	createWindowSurface(VkInstance i, VkSurfaceKHR *surface);
 };

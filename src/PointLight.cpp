@@ -1,21 +1,26 @@
 #include <PointLight.hpp>
 
-void	PointLight::createPipelineLayout(VkDescriptorSetLayout globalSetLayout){
+using namespace vem;
+
+void	PointLight::createPipelineLayout(DSLayout globalSetLayout){
 	VkPushConstantRange	pushConstantRange{};
-	pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+	pushConstantRange.stageFlags =
+		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	pushConstantRange.offset = 0;
 	pushConstantRange.size = sizeof(PointLightPushConstants);
 
-	vector<VkDescriptorSetLayout>	descriptorSetLayouts{globalSetLayout};
+	vector<DSLayout>	descriptorSetLayouts{globalSetLayout};
 
 	VkPipelineLayoutCreateInfo	layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	layoutInfo.setLayoutCount = static_cast<uint32_t>(descriptorSetLayouts.size());
+	layoutInfo.setLayoutCount = static_cast<uint>(descriptorSetLayouts.size());
 	layoutInfo.pSetLayouts = descriptorSetLayouts.data();
 	layoutInfo.pushConstantRangeCount = 1;
 	layoutInfo.pPushConstantRanges = &pushConstantRange;
 
-	if (vkCreatePipelineLayout(_veDevice.device(), &layoutInfo, nullptr, &_pipelineLayout) != 0)
+	if (vkCreatePipelineLayout(
+		_veDevice.device(), &layoutInfo, nullptr, &_pipelineLayout
+	) != 0)
 		throw (runtime_error("failed to create pipeline layout"));
 }
 
@@ -36,7 +41,7 @@ void	PointLight::createPipeline(VkRenderPass renderPass){
 	);
 }
 
-PointLight::PointLight(VeDevice &d, VkRenderPass rp, VkDescriptorSetLayout layout)
+PointLight::PointLight(VeDevice &d, VkRenderPass rp, DSLayout layout)
 : _veDevice(d){
 	createPipelineLayout(layout);
 	createPipeline(rp);
@@ -47,7 +52,7 @@ PointLight::~PointLight(){
 }
 
 void	PointLight::update(FrameInfo &frameInfo, GlobalUbo &ubo){
-	auto	rotateLight = vem::rotate(vem::mat4(1.f), frameInfo.frameTime, {0.f, -1.f, 0.f});
+	auto	light = rotate(mat4(1.f), frameInfo.frameTime, {0.f, -1.f, 0.f});
 	int		lightIndex = 0;
 
 	for (auto &kv: frameInfo.gameObject){
@@ -56,26 +61,28 @@ void	PointLight::update(FrameInfo &frameInfo, GlobalUbo &ubo){
 			continue ;
 
 		// Time
-		obj._transform.translation = vem::vec3(
-			rotateLight * vem::vec4(obj._transform.translation, 1.f)
-		);
-		ubo.pointLights[lightIndex].position = vem::vec4(obj._transform.translation, 1.f);
-		ubo.pointLights[lightIndex].color = vem::vec4(obj._color, obj._pointLight->lightIntensity);
+		obj._transform.translation = vec3(
+			light * vec4(obj._transform.translation, 1.f));
+		ubo.pointLights[lightIndex].position = vec4(
+			obj._transform.translation, 1.f);
+		ubo.pointLights[lightIndex].color = vec4(
+			obj._color, obj._pointLight->lightIntensity);
 		lightIndex++;
 	}
 	ubo.numLights = lightIndex;
 }
 
 void	PointLight::render(FrameInfo &frameInfo){
-	map<float, uint32_t>	sorted;
+	map<float, uint>	sorted;
 
 	for (auto &kv: frameInfo.gameObject){
 		auto	&obj = kv.second;
 		if (obj._pointLight == nullptr)
 			continue ;
 
-		auto	offset = frameInfo.camera.getPosition() - obj._transform.translation;
-		float	disSquared = vem::dot(offset, offset);
+		auto	&cam = frameInfo.camera;
+		auto	offset = cam.getPosition() - obj._transform.translation;
+		float	disSquared = dot(offset, offset);
 
 		sorted[disSquared] = obj.getId();
 	}
@@ -95,8 +102,8 @@ void	PointLight::render(FrameInfo &frameInfo){
 		auto	&obj = frameInfo.gameObject.at(it->second);// Find light object
 
 		PointLightPushConstants	push{};
-		push.position = vem::vec4(obj._transform.translation, 1.f);
-		push.color = vem::vec4(obj._color, obj._pointLight->lightIntensity);
+		push.position = vec4(obj._transform.translation, 1.f);
+		push.color = vec4(obj._color, obj._pointLight->lightIntensity);
 		push.radius = obj._transform.scale.x;
 		vkCmdPushConstants(
 			frameInfo.commandBuffer,
