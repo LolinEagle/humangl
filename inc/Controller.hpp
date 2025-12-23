@@ -20,9 +20,9 @@ private:
 	bool				_textureOn = false;
 	bool				_textureOnPress;
 public:
-	Controller(GLFWwindow *window);
+	Controller(GLFWwindow *win);
 	~Controller();
 
 	bool	getTextureOn(void) const;
-	void	moveInPlaneXZ(GLFWwindow *window, float dt, VeGameObject &go);
+	void	moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go);
 };

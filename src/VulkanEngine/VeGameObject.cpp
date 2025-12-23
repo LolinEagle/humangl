@@ -58,7 +58,7 @@ vem::mat3	TransformComponent::normalMatrix(void){
 	});
 }
 
-VeGameObject::VeGameObject(uint32_t id) : _id(id){
+VeGameObject::VeGameObject(uint id) : _id(id){
 }
 
 VeGameObject::VeGameObject(void){
@@ -69,7 +69,7 @@ VeGameObject::~VeGameObject(){
 }
 
 VeGameObject	VeGameObject::createGameObject(void){
-	static uint32_t	currentId = 0;
+	static uint	currentId = 0;
 
 	return (VeGameObject(currentId++));
 }
@@ -86,6 +86,6 @@ VeGameObject	VeGameObject::makePointLight(
 	return (obj);
 }
 
-const uint32_t	VeGameObject::getId(void){
+const uint	VeGameObject::getId(void){
 	return (_id);
 }

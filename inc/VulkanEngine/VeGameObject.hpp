@@ -19,11 +19,11 @@ struct PointLightComponent{
 
 class VeGameObject{
 private:
-	uint32_t	_id;
+	uint	_id;
 
-	VeGameObject(uint32_t id);
+	VeGameObject(uint id);
 public:
-	using Map = unordered_map<uint32_t, VeGameObject>;
+	using Map = unordered_map<uint, VeGameObject>;
 
 	vem::vec3						_color{};
 	TransformComponent				_transform{};
@@ -40,5 +40,5 @@ public:
 
 	static VeGameObject	createGameObject(void);
 	static VeGameObject	makePointLight(float intensity, float r, vem::vec3 col);
-	const uint32_t		getId(void);
+	const uint			getId(void);
 };

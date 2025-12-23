@@ -1,15 +1,15 @@
 #include <VeBuffer.hpp>
 
-VkDeviceSize	VeBuffer::getAlignment(VkDeviceSize deviceSize, VkDeviceSize minOffsetAlignment){
-	if (minOffsetAlignment > 0)
-		return ((deviceSize + minOffsetAlignment - 1) & ~(minOffsetAlignment - 1));
-	return (deviceSize);
+VkDeviceSize	VeBuffer::getAlignment(VkDeviceSize size, VkDeviceSize min){
+	if (min > 0)
+		return ((size + min - 1) & ~(min - 1));
+	return (size);
 }
 
 VeBuffer::VeBuffer(
 	VeDevice &device,
 	VkDeviceSize instanceSize,
-	uint32_t instanceCount,
+	uint instanceCount,
 	VkBufferUsageFlags usageFlags,
 	VkMemoryPropertyFlags memoryPropertyFlags,
 	VkDeviceSize minOffsetAlignment
@@ -22,7 +22,9 @@ VeBuffer::VeBuffer(
 {
 	_alignmentSize = getAlignment(_instanceSize, minOffsetAlignment);
 	_bufferSize = _alignmentSize * _instanceCount;
-	device.createBuffer(_bufferSize, _usageFlags, _memoryPropertyFlags, _buffer, _memory);
+	device.createBuffer(
+		_bufferSize, _usageFlags, _memoryPropertyFlags, _buffer, _memory
+	);
 }
 
 VeBuffer::~VeBuffer(){
@@ -32,17 +34,21 @@ VeBuffer::~VeBuffer(){
 }
 
 VkResult VeBuffer::map(VkDeviceSize size, VkDeviceSize offset){
-	return (vkMapMemory(_veDevice.device(), _memory, offset, size, 0, &_mapped));
+	return (
+		vkMapMemory(_veDevice.device(), _memory, offset, size, 0, &_mapped)
+	);
 }
 
-void VeBuffer::unmap(){
+void	VeBuffer::unmap(){
 	if (_mapped){
 		vkUnmapMemory(_veDevice.device(), _memory);
 		_mapped = nullptr;
 	}
 }
 
-void VeBuffer::writeToBuffer(void *data, VkDeviceSize size, VkDeviceSize offset){
+void	VeBuffer::writeToBuffer(
+	void *data, VkDeviceSize size, VkDeviceSize offset
+){
 	if (size == VK_WHOLE_SIZE){
 		memcpy(_mapped, data, _bufferSize);
 	} else {
@@ -62,7 +68,9 @@ VkResult VeBuffer::flush(VkDeviceSize size, VkDeviceSize offset){
 	return (vkFlushMappedMemoryRanges(_veDevice.device(), 1, &mappedRange));
 }
 
-VkDescriptorBufferInfo VeBuffer::descriptorBufferInfo(VkDeviceSize size, VkDeviceSize offset){
+VkDescriptorBufferInfo	VeBuffer::descriptorBufferInfo(
+	VkDeviceSize size, VkDeviceSize offset
+){
 	return (VkDescriptorBufferInfo{_buffer, offset, size});
 }
 

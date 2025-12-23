@@ -23,12 +23,12 @@ void	VeDevice::createInstance(void){
 	VkInstanceCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+	createInfo.enabledExtensionCount = static_cast<uint>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
 	if (_enableValidationLayers){
 		VkDebugUtilsMessengerCreateInfoEXT	debugCreateInfo;
-		createInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
+		createInfo.enabledLayerCount = static_cast<uint>(_validationLayers.size());
 		createInfo.ppEnabledLayerNames = _validationLayers.data();
 		populateDebugMessenger(debugCreateInfo);
 		// createInfo.pNext = static_cast<VkDebugUtilsMessengerCreateInfoEXT*>(&debugCreateInfo);
@@ -70,7 +70,7 @@ void	VeDevice::createSurface(void){
 }
 
 void	VeDevice::pickPhysicalDevice(void){
-	uint32_t	deviceCount = 0;
+	uint	deviceCount = 0;
 	vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
 	if (deviceCount == 0)
 		throw (runtime_error("failed to find GPUs with Vulkan support"));
@@ -89,11 +89,11 @@ void	VeDevice::pickPhysicalDevice(void){
 
 void	VeDevice::createLogicalDevice(void){
 	QueueFamilyIndices	indices = findQueueFamilies(_physicalDevice);
-	set<uint32_t>		uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
+	set<uint>			uniqueQueueFamilies = {indices.graphicsFamily, indices.presentFamily};
 	float				queuePriority = 1.0f;
 	vector<VkDeviceQueueCreateInfo>	queueCreateInfos;
 
-	for (uint32_t queueFamily : uniqueQueueFamilies){
+	for (uint queueFamily : uniqueQueueFamilies){
 		VkDeviceQueueCreateInfo	queueCreateInfo{};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex = queueFamily;
@@ -107,14 +107,14 @@ void	VeDevice::createLogicalDevice(void){
 
 	VkDeviceCreateInfo	createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+	createInfo.queueCreateInfoCount = static_cast<uint>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.pEnabledFeatures = &deviceFeatures;
-	createInfo.enabledExtensionCount = static_cast<uint32_t>(_deviceExtensions.size());
+	createInfo.enabledExtensionCount = static_cast<uint>(_deviceExtensions.size());
 	createInfo.ppEnabledExtensionNames = _deviceExtensions.data();
 
 	if (_enableValidationLayers){
-		createInfo.enabledLayerCount = static_cast<uint32_t>(_validationLayers.size());
+		createInfo.enabledLayerCount = static_cast<uint>(_validationLayers.size());
 		createInfo.ppEnabledLayerNames = _validationLayers.data();
 	} else {
 		createInfo.enabledLayerCount = 0;
@@ -138,7 +138,7 @@ void	VeDevice::createCommandPool(void){
 		throw (runtime_error("failed to create command pool"));
 }
 
-bool					VeDevice::isDeviceSuitable(VkPhysicalDevice device){
+bool	VeDevice::isDeviceSuitable(VkPhysicalDevice device){
 	QueueFamilyIndices	indices = findQueueFamilies(device);
 	bool				extensionsSupported = checkDeviceExtensionSupport(device);
 	bool				swapChainAdequate = false;
@@ -159,21 +159,8 @@ bool					VeDevice::isDeviceSuitable(VkPhysicalDevice device){
 	);
 }
 
-vector<const char*>		VeDevice::getRequiredExtensions(void){
-	uint32_t	glfwExtensionCount = 0;
-	const char	**glfwExtensions;
-
-	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
-	vector<const char*>	extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-	if (_enableValidationLayers)
-		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-	return (extensions);
-}
-
-bool					VeDevice::checkValidationLayerSupport(void){
-	uint32_t	layerCount;
+bool	VeDevice::checkValidationLayerSupport(void){
+	uint	layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
 	vector<VkLayerProperties>	availableLayers(layerCount);
@@ -194,10 +181,65 @@ bool					VeDevice::checkValidationLayerSupport(void){
 	return (true);
 }
 
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+	VkDebugUtilsMessageTypeFlagsEXT messageType,
+	const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+	void *pUserData
+){
+	cerr << "validation layer: " << pCallbackData->pMessage << endl;
+	return (VK_FALSE);
+}
+
+void	VeDevice::populateDebugMessenger(VkDebugUtilsMessengerCreateInfoEXT &info){
+	info = {};
+	info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	info.messageSeverity =
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+	info.messageType =
+		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	info.pfnUserCallback = debugCallback;
+}
+
+bool	VeDevice::checkDeviceExtensionSupport(VkPhysicalDevice device){
+	uint	extensionCount;
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+	vector<VkExtensionProperties>	availableExtensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(
+		device,
+		nullptr,
+		&extensionCount,
+		availableExtensions.data()
+	);
+
+	set<string>	requiredExtensions(_deviceExtensions.begin(), _deviceExtensions.end());
+
+	for (const auto &extension : availableExtensions)
+		requiredExtensions.erase(extension.extensionName);
+	return (requiredExtensions.empty());
+}
+
+vector<const char*>		VeDevice::getRequiredExtensions(void){
+	uint		glfwExtensionCount = 0;
+	const char	**glfwExtensions;
+
+	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+	vector<const char*>	extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
+
+	if (_enableValidationLayers)
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+	return (extensions);
+}
+
 QueueFamilyIndices		VeDevice::findQueueFamilies(VkPhysicalDevice device){
 	QueueFamilyIndices	indices;
 
-	uint32_t	queueFamilyCount = 0;
+	uint	queueFamilyCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
 	vector<VkQueueFamilyProperties>	queueFamilies(queueFamilyCount);
@@ -222,53 +264,11 @@ QueueFamilyIndices		VeDevice::findQueueFamilies(VkPhysicalDevice device){
 	return (indices);
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-	VkDebugUtilsMessageTypeFlagsEXT messageType,
-	const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-	void *pUserData
-){
-	cerr << "validation layer: " << pCallbackData->pMessage << endl;
-	return (VK_FALSE);
-}
-
-void					VeDevice::populateDebugMessenger(VkDebugUtilsMessengerCreateInfoEXT &info){
-	info = {};
-	info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	info.messageSeverity =
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-	info.messageType =
-		VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-		VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	info.pfnUserCallback = debugCallback;
-}
-
-bool					VeDevice::checkDeviceExtensionSupport(VkPhysicalDevice device){
-	uint32_t	extensionCount;
-	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
-
-	vector<VkExtensionProperties>	availableExtensions(extensionCount);
-	vkEnumerateDeviceExtensionProperties(
-		device,
-		nullptr,
-		&extensionCount,
-		availableExtensions.data()
-	);
-
-	set<string>	requiredExtensions(_deviceExtensions.begin(), _deviceExtensions.end());
-
-	for (const auto &extension : availableExtensions)
-		requiredExtensions.erase(extension.extensionName);
-	return (requiredExtensions.empty());
-}
-
 SwapChainSupportDetails	VeDevice::querySwapChainSupport(VkPhysicalDevice device){
 	SwapChainSupportDetails	details;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _surface, &details.capabilities);
 
-	uint32_t	formatCount;
+	uint	formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(device, _surface, &formatCount, nullptr);
 
 	if (formatCount != 0){
@@ -276,7 +276,7 @@ SwapChainSupportDetails	VeDevice::querySwapChainSupport(VkPhysicalDevice device)
 		vkGetPhysicalDeviceSurfaceFormatsKHR(device, _surface, &formatCount, details.formats.data());
 	}
 
-	uint32_t	presentModeCount;
+	uint	presentModeCount;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(device, _surface, &presentModeCount, nullptr);
 
 	if (presentModeCount != 0){
@@ -343,11 +343,11 @@ SwapChainSupportDetails	VeDevice::getSwapChainSupport(void){
 	return (querySwapChainSupport(_physicalDevice));
 }
 
-uint32_t			VeDevice::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties){
+uint				VeDevice::findMemoryType(uint typeFilter, VkMemoryPropertyFlags properties){
 	VkPhysicalDeviceMemoryProperties	memProperties;
 	vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &memProperties);
 
-	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++){
+	for (uint i = 0; i < memProperties.memoryTypeCount; i++){
 		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
 			return (i);
 	}
@@ -433,16 +433,16 @@ void			VeDevice::endSingleTimeCommands(VkCommandBuffer commandBuffer){
 	vkFreeCommandBuffers(_device, _commandPool, 1, &commandBuffer);
 }
 
-void			VeDevice::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size){
+void			VeDevice::copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size){
 	VkCommandBuffer	commandBuffer = beginSingleTimeCommands();
 	VkBufferCopy	copyRegion{};
 	copyRegion.size = size;
-	vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+	vkCmdCopyBuffer(commandBuffer, src, dst, 1, &copyRegion);
 	endSingleTimeCommands(commandBuffer);
 }
 
 void			VeDevice::copyBufferToImage(
-	VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, uint32_t layerCount
+	VkBuffer buffer, VkImage image, uint width, uint height, uint layerCount
 ){
 	VkCommandBuffer	commandBuffer = beginSingleTimeCommands();
 
