@@ -22,10 +22,6 @@ VeDescriptorSetLayout::Builder &VeDescriptorSetLayout::Builder::addBinding(
 	return (*this);
 }
 
-unique_ptr<VeDescriptorSetLayout>	VeDescriptorSetLayout::Builder::build() const {
-	return (make_unique<VeDescriptorSetLayout>(_device, _bindings));
-}
-
 VeDescriptorSetLayout::VeDescriptorSetLayout(VeDevice &device, Binding bindings)
 : _device(device), _bindings(bindings){
 	vector<VkDescriptorSetLayoutBinding>	setLayoutBindings{};
@@ -37,16 +33,16 @@ VeDescriptorSetLayout::VeDescriptorSetLayout(VeDevice &device, Binding bindings)
 	info.bindingCount = static_cast<uint>(setLayoutBindings.size());
 	info.pBindings = setLayoutBindings.data();
 
-	if (vkCreateDescriptorSetLayout(_device.device(), &info, nullptr, &_descriptorSetLayout) != 0)
+	if (vkCreateDescriptorSetLayout(
+		_device.device(), &info, nullptr, &_descriptorSetLayout
+	) != 0)
 		throw (runtime_error("failed to create descriptor set layout"));
 }
 
 VeDescriptorSetLayout::~VeDescriptorSetLayout(){
-	vkDestroyDescriptorSetLayout(_device.device(), _descriptorSetLayout, nullptr);
-}
-
-VkDescriptorSetLayout	VeDescriptorSetLayout::getDescriptorSetLayout(void) const {
-	return (_descriptorSetLayout);
+	vkDestroyDescriptorSetLayout(
+		_device.device(), _descriptorSetLayout, nullptr
+	);
 }
 
 /* VeDescriptorPool ********************************************************* */
@@ -74,7 +70,9 @@ VeDescriptorPool::Builder	&VeDescriptorPool::Builder::setMaxSets(uint count){
 }
 
 unique_ptr<VeDescriptorPool>	VeDescriptorPool::Builder::build() const {
-	return (make_unique<VeDescriptorPool>(_device, _maxSets, _poolFlags, _poolSizes));
+	return (make_unique<VeDescriptorPool>(
+		_device, _maxSets, _poolFlags, _poolSizes)
+	);
 }
 
 VeDescriptorPool::VeDescriptorPool(
@@ -90,7 +88,9 @@ VeDescriptorPool::VeDescriptorPool(
 	poolCreateInfo.maxSets = maxSets;
 	poolCreateInfo.flags = poolFlags;
 
-	if (vkCreateDescriptorPool(_device.device(), &poolCreateInfo, nullptr, &_descriptorPool) != 0)
+	if (vkCreateDescriptorPool(
+		_device.device(), &poolCreateInfo, nullptr, &_descriptorPool
+	) != 0)
 		throw (runtime_error("failed to create descriptor pool"));
 }
 
@@ -101,20 +101,23 @@ VeDescriptorPool::~VeDescriptorPool(){
 bool	VeDescriptorPool::allocateDescriptor(
 	const VkDescriptorSetLayout descriptorSetLayout, VkDescriptorSet &descriptor
 ) const {
-	VkDescriptorSetAllocateInfo	allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfo.descriptorPool = _descriptorPool;
-	allocInfo.pSetLayouts = &descriptorSetLayout;
-	allocInfo.descriptorSetCount = 1;
+	VkDescriptorSetAllocateInfo	info{};
+	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	info.descriptorPool = _descriptorPool;
+	info.pSetLayouts = &descriptorSetLayout;
+	info.descriptorSetCount = 1;
 
-	// Might want to create a "DescriptorPoolManager" class that handles this case, and builds
-	// a new pool whenever an old pool fills up. But this is beyond our current scope
-	if (vkAllocateDescriptorSets(_device.device(), &allocInfo, &descriptor) != 0)
+	// Might want to create a "DescriptorPoolManager" class that handles this
+	// case, and builds a new pool whenever an old pool fills up. But this is
+	// beyond our current scope
+	if (vkAllocateDescriptorSets(_device.device(), &info, &descriptor) != 0)
 		return (false);
 	return (true);
 }
 
-void	VeDescriptorPool::freeDescriptors(vector<VkDescriptorSet> &descriptors) const {
+void	VeDescriptorPool::freeDescriptors(
+	vector<VkDescriptorSet> &descriptors
+) const {
 	vkFreeDescriptorSets(
 		_device.device(),
 		_descriptorPool,
@@ -129,11 +132,14 @@ void	VeDescriptorPool::resetPool(void){
 
 /* VeDescriptorWriter ******************************************************* */
 
-VeDescriptorWriter::VeDescriptorWriter(VeDescriptorSetLayout &setLayout, VeDescriptorPool &pool)
-: _setLayout(setLayout), _pool(pool){
+VeDescriptorWriter::VeDescriptorWriter(
+	VeDescriptorSetLayout &setLayout, VeDescriptorPool &pool
+): _setLayout(setLayout), _pool(pool){
 }
 
-VeDescriptorWriter	&VeDescriptorWriter::writeBuffer(uint bind, VkDescriptorBufferInfo *buffer){
+VeDescriptorWriter	&VeDescriptorWriter::writeBuffer(
+	uint bind, VkDescriptorBufferInfo *buffer
+){
 	auto	&bindingDescription = _setLayout._bindings[bind];
 
 	VkWriteDescriptorSet	write{};
@@ -147,7 +153,9 @@ VeDescriptorWriter	&VeDescriptorWriter::writeBuffer(uint bind, VkDescriptorBuffe
 	return (*this);
 }
 
-VeDescriptorWriter	&VeDescriptorWriter::writeImage(uint bind, VkDescriptorImageInfo *image){
+VeDescriptorWriter	&VeDescriptorWriter::writeImage(
+	uint bind, VkDescriptorImageInfo *image
+){
 	auto	&bindingDescription = _setLayout._bindings[bind];
 
 	VkWriteDescriptorSet	write{};
@@ -162,7 +170,8 @@ VeDescriptorWriter	&VeDescriptorWriter::writeImage(uint bind, VkDescriptorImageI
 }
 
 bool	VeDescriptorWriter::build(VkDescriptorSet &set){
-	bool	success = _pool.allocateDescriptor(_setLayout.getDescriptorSetLayout(), set);
+	bool	success =
+		_pool.allocateDescriptor(_setLayout.getDescriptorSetLayout(), set);
 	if (!success)
 		return (false);
 	overwrite(set);
@@ -172,5 +181,7 @@ bool	VeDescriptorWriter::build(VkDescriptorSet &set){
 void	VeDescriptorWriter::overwrite(VkDescriptorSet &set){
 	for (auto &write : _writes)
 		write.dstSet = set;
-	vkUpdateDescriptorSets(_pool._device.device(), _writes.size(), _writes.data(), 0, nullptr);
+	vkUpdateDescriptorSets(
+		_pool._device.device(), _writes.size(), _writes.data(), 0, nullptr
+	);
 }

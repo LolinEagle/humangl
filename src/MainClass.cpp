@@ -4,11 +4,10 @@ using namespace std;
 using seconds_float = chrono::duration<float, chrono::seconds::period>;
 
 void	MainClass::loadGameObjects(
-	const string &filepath, vem::vec3 translation, vem::vec3 scale,
-	const int &color, const int &texture
+	const string &filepath, vem::vec3 translation, vem::vec3 scale
 ){
 	shared_ptr<VeModel>	veModel = VeModel::createModelFromFile(
-		_veDevice, "model/" + filepath + ".obj", color, texture
+		_veDevice, "model/" + filepath + ".obj", _color, _texture
 	);
 	auto	gameObject = VeGameObject::createGameObject();
 
@@ -18,33 +17,38 @@ void	MainClass::loadGameObjects(
 	_gameObjects.emplace(gameObject.getId(), move(gameObject));
 }
 
-MainClass::MainClass(const int &color, const int &texture){
+void	MainClass::loadCube(vem::vec3 translation, vem::vec3 scale){
+	loadGameObjects("cube", translation, scale);
+}
+
+MainClass::MainClass(const int &color, const int &texture)
+: _color(color), _texture(texture){
 	_globalPool = VeDescriptorPool::Builder(_veDevice)
 		.setMaxSets(MAX_FRAMES * 2)
 		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES)
 		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES)
 		.build();
 
-	const vem::vec3	scale{2.f, 3.f, 2.f};
+	const vem::vec3	scale{1.f, 1.5f, 1.f};
 
 	// Head & Torso
-	loadGameObjects("cube", {0.f, -25.f, 0.f}, {4.f, 4.f, 4.f}, color, texture);
-	loadGameObjects("cube", {0.f, -15.f, 0.f}, {4.f, 6.f, 2.f}, color, texture);
+	loadCube({0.f, -12.5f, 0.f}, {2.f, 2.f, 2.f});
+	loadCube({0.f, -7.5f, 0.f}, {2.f, 3.f, 1.f});
 
 	// Arms
-	loadGameObjects("cube", {6.f, -18.f, 0.f}, scale, color, texture);
-	loadGameObjects("cube", {-6.f, -18.f, 0.f}, scale, color, texture);
-	loadGameObjects("cube", {6.f, -12.f, 0.f}, scale, color, texture);
-	loadGameObjects("cube", {-6.f, -12.f, 0.f}, scale, color, texture);
+	loadCube({3.f, -9.f, 0.f}, scale);
+	loadCube({-3.f, -9.f, 0.f}, scale);
+	loadCube({3.f, -6.f, 0.f}, scale);
+	loadCube({-3.f, -6.f, 0.f}, scale);
 
 	// Legs
-	loadGameObjects("cube", {2.f, -6.f, 0.f}, scale, color, texture);
-	loadGameObjects("cube", {-2.f, -6.f, 0.f}, scale, color, texture);
-	loadGameObjects("cube", {2.f, 0.f, 0.f}, scale, color, texture);
-	loadGameObjects("cube", {-2.f, 0.f, 0.f}, scale, color, texture);
+	loadCube({1.f, -3.f, 0.f}, scale);
+	loadCube({-1.f, -3.f, 0.f}, scale);
+	loadCube({1.f, 0.f, 0.f}, scale);
+	loadCube({-1.f, 0.f, 0.f}, scale);
 
 	// Ground
-	loadGameObjects("cube", {0.f, 4.f, 0.f}, {16.f, 1.f, 16.f}, color, texture);
+	loadCube({0.f, 2.5f, 0.f}, {16.f, 1.f, 16.f});
 }
 
 MainClass::~MainClass(){

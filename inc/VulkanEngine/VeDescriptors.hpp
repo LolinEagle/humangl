@@ -25,13 +25,17 @@ public:
 			VkShaderStageFlags stageFlags,
 			uint count = 1
 		);
-		unique_ptr<VeDescriptorSetLayout> build() const;
+		unique_ptr<VeDescriptorSetLayout> build() const {
+			return (make_unique<VeDescriptorSetLayout>(_device, _bindings));
+		}
 	};
 
 	VeDescriptorSetLayout(VeDevice &device, Binding bindings);
 	~VeDescriptorSetLayout();
 
-	VkDescriptorSetLayout	getDescriptorSetLayout(void) const;
+	VkDescriptorSetLayout	getDescriptorSetLayout(void) const {
+		return (_descriptorSetLayout);
+	};
 };
 
 class VeDescriptorPool{

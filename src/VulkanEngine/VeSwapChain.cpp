@@ -12,12 +12,12 @@ void	VeSwapChain::init(void){
 }
 
 void	VeSwapChain::createSwapChain(void){
-	SwapChainSupportDetails	swapChainSupport = _device.getSwapChainSupport();
-	VkSurfaceFormatKHR		surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
-	VkPresentModeKHR		presentMode = chooseSwapPresentMode(swapChainSupport.presentModes);
-	VkExtent2D				extent = chooseSwapExtent(swapChainSupport.capabilities);
-	uint					imageCount = swapChainSupport.capabilities.minImageCount + 1;
-	const uint				maxImageCount = swapChainSupport.capabilities.maxImageCount;
+	SwapChainSupportDetails	details = _device.getSwapChainSupport();
+	VkSurfaceFormatKHR		formats = chooseSwapSurfaceFormat(details.formats);
+	VkPresentModeKHR		mode = chooseSwapPresentMode(details.presentModes);
+	VkExtent2D				extent = chooseSwapExtent(details.capabilities);
+	uint					imageCount = details.capabilities.minImageCount + 1;
+	const uint				maxImageCount = details.capabilities.maxImageCount;
 
 	if (maxImageCount > 0 && imageCount > maxImageCount)
 		imageCount = maxImageCount;
@@ -26,16 +26,16 @@ void	VeSwapChain::createSwapChain(void){
 	createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	createInfo.surface = _device.surface();
 	createInfo.minImageCount = imageCount;
-	createInfo.imageFormat = surfaceFormat.format;
-	createInfo.imageColorSpace = surfaceFormat.colorSpace;
+	createInfo.imageFormat = formats.format;
+	createInfo.imageColorSpace = formats.colorSpace;
 	createInfo.imageExtent = extent;
 	createInfo.imageArrayLayers = 1;
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-	QueueFamilyIndices	indices = _device.findPhysicalQueueFamilies();
-	uint				queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
+	QueueFamilyIndices	in = _device.findPhysicalQueueFamilies();
+	uint	queueFamilyIndices[] = {in.graphicsFamily, in.presentFamily};
 
-	if (indices.graphicsFamily != indices.presentFamily){
+	if (in.graphicsFamily != in.presentFamily){
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		createInfo.queueFamilyIndexCount = 2;
 		createInfo.pQueueFamilyIndices = queueFamilyIndices;
@@ -43,13 +43,16 @@ void	VeSwapChain::createSwapChain(void){
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	}
 
-	createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+	createInfo.preTransform = details.capabilities.currentTransform;
 	createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	createInfo.presentMode = presentMode;
+	createInfo.presentMode = mode;
 	createInfo.clipped = VK_TRUE;
-	createInfo.oldSwapchain = _oldSwapChain == nullptr ? VK_NULL_HANDLE : _oldSwapChain->_swapChain;
+	createInfo.oldSwapchain =
+		_oldSwapChain == nullptr ? VK_NULL_HANDLE : _oldSwapChain->_swapChain;
 
-	if (vkCreateSwapchainKHR(_device.device(), &createInfo, nullptr, &_swapChain) != 0)
+	if (vkCreateSwapchainKHR(
+		_device.device(), &createInfo, nullptr, &_swapChain
+	) != 0)
 		throw (runtime_error("failed to create swap chain"));
 
 	// We only specified a minimum number of images in the swap chain, so the
@@ -58,8 +61,10 @@ void	VeSwapChain::createSwapChain(void){
 	// then resize container and finally call it again to retrieve the handles.
 	vkGetSwapchainImagesKHR(_device.device(), _swapChain, &imageCount, nullptr);
 	_swapChainImages.resize(imageCount);
-	vkGetSwapchainImagesKHR(_device.device(), _swapChain, &imageCount, _swapChainImages.data());
-	_swapChainImageFormat = surfaceFormat.format;
+	vkGetSwapchainImagesKHR(
+		_device.device(), _swapChain, &imageCount, _swapChainImages.data()
+	);
+	_swapChainImageFormat = formats.format;
 	_swapChainExtent = extent;
 }
 
@@ -77,7 +82,9 @@ void	VeSwapChain::createImageViews(void){
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(_device.device(), &viewInfo, nullptr, &_swapChainImageViews[i]) != 0)
+		if (vkCreateImageView(
+			_device.device(), &viewInfo, nullptr, &_swapChainImageViews[i]
+		) != 0)
 			throw (runtime_error("failed to create texture image view"));
 	}
 }
@@ -125,7 +132,9 @@ void	VeSwapChain::createDepthResources(void){
 		viewInfo.subresourceRange.baseArrayLayer = 0;
 		viewInfo.subresourceRange.layerCount = 1;
 
-		if (vkCreateImageView(_device.device(), &viewInfo, nullptr, &_depthImageViews[i]) != 0)
+		if (vkCreateImageView(
+			_device.device(), &viewInfo, nullptr, &_depthImageViews[i]
+		) != 0)
 			throw (runtime_error("failed to create texture image view"));
 	}
 }
@@ -139,11 +148,13 @@ void	VeSwapChain::createRenderPass(void){
 	depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	depthAttachment.finalLayout =
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentReference	depthAttachmentRef{};
 	depthAttachmentRef.attachment = 1;
-	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	depthAttachmentRef.layout =
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	VkAttachmentDescription	colorAttachment{};
 	colorAttachment.format = getSwapChainImageFormat();
@@ -167,16 +178,17 @@ void	VeSwapChain::createRenderPass(void){
 
 	VkSubpassDependency	dependency{};
 	dependency.dstSubpass = 0;
-	dependency.dstAccessMask =
-		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-	dependency.dstStageMask =
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+		VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+		VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependency.srcAccessMask = 0;
-	dependency.srcStageMask =
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+		VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 
-	array<VkAttachmentDescription, 2>	attachments = {colorAttachment, depthAttachment};
+	array<VkAttachmentDescription, 2>	attachments =
+		{colorAttachment, depthAttachment};
 
 	VkRenderPassCreateInfo	renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -187,14 +199,17 @@ void	VeSwapChain::createRenderPass(void){
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
 
-	if (vkCreateRenderPass(_device.device(), &renderPassInfo, nullptr, &_renderPass) != 0)
+	if (vkCreateRenderPass(
+		_device.device(), &renderPassInfo, nullptr, &_renderPass
+	) != 0)
 		throw (runtime_error("failed to create render pass"));
 }
 
 void	VeSwapChain::createFramebuffers(void){
 	_swapChainFramebuffers.resize(imageCount());
 	for (size_t i = 0; i < imageCount(); i++){
-		array<VkImageView, 2>	attachments = {_swapChainImageViews[i], _depthImageViews[i]};
+		array<VkImageView, 2>	attachments =
+			{_swapChainImageViews[i], _depthImageViews[i]};
 		VkExtent2D				swapChainExtent = getSwapChainExtent();
 
 		VkFramebufferCreateInfo	framebufferInfo{};
@@ -229,13 +244,13 @@ void	VeSwapChain::createSyncObjects(void){
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+	const VkDevice	&d = _device.device();
 	for (uint i = 0; i < MAX_FRAMES; i++){
-		if (
-			vkCreateSemaphore(_device.device(), &si, nullptr, &_imageAvailableSemaphores[i]) != 0 ||
-			vkCreateSemaphore(_device.device(), &si, nullptr, &_renderFinishedSemaphores[i]) != 0 ||
-			vkCreateFence(_device.device(), &fenceInfo, nullptr, &_inFlightFences[i]) != 0
+		if (vkCreateSemaphore(d, &si, nullptr, &_imageAvailableSemaphores[i]) ||
+			vkCreateSemaphore(d, &si, nullptr, &_renderFinishedSemaphores[i]) ||
+			vkCreateFence(d, &fenceInfo, nullptr, &_inFlightFences[i])
 		)
-			throw (runtime_error("failed to create synchronization objects for a frame"));
+			throw (runtime_error("failed to create synchronization objects"));
 	}
 }
 
@@ -289,34 +304,36 @@ VeSwapChain::VeSwapChain(VeDevice &deviceRef, VkExtent2D extent)
 	init();
 }
 
-VeSwapChain::VeSwapChain(VeDevice &deviceRef, VkExtent2D extent, shared_ptr<VeSwapChain> previous)
-: _device(deviceRef), _windowExtent(extent), _oldSwapChain(previous){
+VeSwapChain::VeSwapChain(
+	VeDevice &deviceRef, VkExtent2D extent, shared_ptr<VeSwapChain> previous
+): _device(deviceRef), _windowExtent(extent), _oldSwapChain(previous){
 	init();
 	_oldSwapChain = nullptr;
 }
 
 VeSwapChain::~VeSwapChain(){
+	const VkDevice	&d = _device.device();
 	for (auto imageView : _swapChainImageViews)
-		vkDestroyImageView(_device.device(), imageView, nullptr);
+		vkDestroyImageView(d, imageView, nullptr);
 	_swapChainImageViews.clear();
 	if (_swapChain != nullptr){
-		vkDestroySwapchainKHR(_device.device(), _swapChain, nullptr);
+		vkDestroySwapchainKHR(d, _swapChain, nullptr);
 		_swapChain = nullptr;
 	}
 	for (int i = 0; i < _depthImages.size(); i++){
-		vkDestroyImageView(_device.device(), _depthImageViews[i], nullptr);
-		vkDestroyImage(_device.device(), _depthImages[i], nullptr);
-		vkFreeMemory(_device.device(), _depthImageMemorys[i], nullptr);
+		vkDestroyImageView(d, _depthImageViews[i], nullptr);
+		vkDestroyImage(d, _depthImages[i], nullptr);
+		vkFreeMemory(d, _depthImageMemorys[i], nullptr);
 	}
 	for (auto framebuffer : _swapChainFramebuffers)
-		vkDestroyFramebuffer(_device.device(), framebuffer, nullptr);
-	vkDestroyRenderPass(_device.device(), _renderPass, nullptr);
+		vkDestroyFramebuffer(d, framebuffer, nullptr);
+	vkDestroyRenderPass(d, _renderPass, nullptr);
 
 	// Cleanup synchronization objects
 	for (size_t i = 0; i < MAX_FRAMES; i++){
-		vkDestroySemaphore(_device.device(), _renderFinishedSemaphores[i], nullptr);
-		vkDestroySemaphore(_device.device(), _imageAvailableSemaphores[i], nullptr);
-		vkDestroyFence(_device.device(), _inFlightFences[i], nullptr);
+		vkDestroySemaphore(d, _renderFinishedSemaphores[i], nullptr);
+		vkDestroySemaphore(d, _imageAvailableSemaphores[i], nullptr);
+		vkDestroyFence(d, _inFlightFences[i], nullptr);
 	}
 }
 
@@ -353,12 +370,17 @@ uint			VeSwapChain::height(void){
 }
 
 float			VeSwapChain::extentAspectRatio(void){
-	return (static_cast<float>(_swapChainExtent.width) / static_cast<float>(_swapChainExtent.height));
+	const VkExtent2D	&s = _swapChainExtent;
+	return (static_cast<float>(s.width) / static_cast<float>(s.height));
 }
 
 VkFormat		VeSwapChain::findDepthFormat(void){
 	return (_device.findSupportedFormat(
-		{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+		{
+			VK_FORMAT_D32_SFLOAT,
+			VK_FORMAT_D32_SFLOAT_S8_UINT,
+			VK_FORMAT_D24_UNORM_S8_UINT
+		},
 		VK_IMAGE_TILING_OPTIMAL,
 		VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 	));
@@ -377,7 +399,7 @@ VkResult		VeSwapChain::acquireNextImage(uint *imageIndex){
 		_device.device(),
 		_swapChain,
 		numeric_limits<ulong>::max(),
-		_imageAvailableSemaphores[_currentFrame],// Must be a not signaled semaphore
+		_imageAvailableSemaphores[_currentFrame],
 		VK_NULL_HANDLE,
 		imageIndex
 	);
@@ -385,16 +407,22 @@ VkResult		VeSwapChain::acquireNextImage(uint *imageIndex){
 	return (result);
 }
 
-VkResult		VeSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint *image){
+VkResult		VeSwapChain::submitCommandBuffers(
+	const VkCommandBuffer *buffers, uint *image
+){
 	if (_imagesInFlight[*image] != VK_NULL_HANDLE) 
-		vkWaitForFences(_device.device(), 1, &_imagesInFlight[*image], VK_TRUE, UINT64_MAX);
+		vkWaitForFences(
+			_device.device(), 1, &_imagesInFlight[*image], VK_TRUE, UINT64_MAX
+		);
 	_imagesInFlight[*image] = _inFlightFences[_currentFrame];
 
 	VkSubmitInfo	submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	VkSemaphore				waitSemaphores[] = {_imageAvailableSemaphores[_currentFrame]};
-	VkPipelineStageFlags	waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+	VkSemaphore				waitSemaphores[] =
+		{_imageAvailableSemaphores[_currentFrame]};
+	VkPipelineStageFlags	waitStages[] =
+		{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 	submitInfo.waitSemaphoreCount = 1;
 	submitInfo.pWaitSemaphores = waitSemaphores;
 	submitInfo.pWaitDstStageMask = waitStages;
@@ -406,7 +434,9 @@ VkResult		VeSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
 	vkResetFences(_device.device(), 1, &_inFlightFences[_currentFrame]);
-	if (vkQueueSubmit(_device.graphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]) != 0)
+	if (vkQueueSubmit(
+		_device.graphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]
+	) != 0)
 		throw (runtime_error("failed to submit draw command buffer"));
 
 	VkPresentInfoKHR	presentInfo{};
@@ -426,7 +456,7 @@ VkResult		VeSwapChain::submitCommandBuffers(const VkCommandBuffer *buffers, uint
 	return (result);
 }
 
-bool			VeSwapChain::compareSwapFormate(const VeSwapChain &swapChain) const {
+bool	VeSwapChain::compareSwapFormate(const VeSwapChain &swapChain) const {
 	return (swapChain._swapChainDepthFormat == _swapChainDepthFormat &&
 			swapChain._swapChainImageFormat == _swapChainImageFormat);
 }
