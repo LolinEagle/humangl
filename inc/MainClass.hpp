@@ -18,14 +18,16 @@ private:
 	VeWindow	_veWindow{WIDTH, HEIGHT};
 	VeDevice	_veDevice{_veWindow};
 	VeRenderer	_veRenderer{_veWindow, _veDevice};
+	int			_color;
+	int			_texture;
 
 	unique_ptr<VeDescriptorPool>	_globalPool{};
 	VeGameObject::Map				_gameObjects;
 
 	void	loadGameObjects(
-		const string &filepath, vem::vec3 translation, vem::vec3 scale,
-		const int &color, const int &texture
+		const string &filepath, vem::vec3 translation, vem::vec3 scale
 	);
+	void	loadCube(vem::vec3 translation, vem::vec3 scale);
 public:
 	MainClass(const int &color, const int &texture);
 	~MainClass();

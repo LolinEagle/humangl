@@ -55,7 +55,7 @@ void	VeModel::Builder::loadModel(const string &filepath, const int &color){
 		} else if (token == "f"){// Face
 			string		vertexIndices, indexStr;// Indices, temporary index
 			int			position, uv, normal;	// Position, texture, normal
-			size_t		found;					// Found if face have uv & normal
+			size_t		found;					// If face have uv and normal
 			uint		x[4];					// Keep indices for square face
 			int			verticeAdded = 0;		// How many vertices have be add
 			static int	si = 0;

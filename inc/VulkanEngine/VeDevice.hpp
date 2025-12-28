@@ -42,13 +42,13 @@ private:
 	void	createCommandPool(void);
 
 	// Helper functions
-	bool	isDeviceSuitable(VkPhysicalDevice device);
+	bool	isDeviceSuitable(VkPhysicalDevice d);
 	bool	checkValidationLayerSupport(void);
 	void	populateDebugMessenger(VkDebugUtilsMessengerCreateInfoEXT &info);
-	bool	checkDeviceExtensionSupport(VkPhysicalDevice device);
+	bool	checkDeviceExtensionSupport(VkPhysicalDevice d);
 	LayerList				getRequiredExtensions(void);
-	QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice device);
-	SwapChainSupportDetails	querySwapChainSupport(VkPhysicalDevice device);
+	QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice d);
+	SwapChainSupportDetails	querySwapChainSupport(VkPhysicalDevice d);
 public:
 	const bool 					_enableValidationLayers = true;
 	VkPhysicalDeviceProperties	_properties;
