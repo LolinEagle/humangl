@@ -15,7 +15,7 @@ private:
 
 	const KeyMappings	_keys{};
 	const float			_moveSpeed = 4.f;
-	const float			_lookSpeed = 16.f;
+	const float			_lookSpeed = 4.f;
 	const double		_lookOffset = 2.;
 	bool				_textureOn = false;
 	bool				_textureOnPress;

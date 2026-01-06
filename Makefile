@@ -53,7 +53,7 @@ re:fclean
 
 run:${NAME}
 	clear
-	./${NAME} 1 1
+	./${NAME}
 
 shader:shaderclean
 	${GLSLC} ./shader/simpleShader.vert -o ./shader/simpleShader.vert.spv

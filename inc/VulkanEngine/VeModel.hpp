@@ -41,7 +41,8 @@ private:
 
 	void	copyBufferToImage(VkBuffer buf, VkImage image, uint w, uint h);
 	void	transitionImageLayout(
-		VkImage, VkFormat, VkImageLayout, VkImageLayout
+		VkImage image, VkFormat f,
+		VkImageLayout oldLayout, VkImageLayout newLayout
 	);
 	void	createImage(
 		uint w, uint h,
@@ -59,7 +60,8 @@ private:
 	void	createIndexBuffers(const vector<uint> &indices);
 public:
 	static unique_ptr<VeModel>	createModelFromFile(
-		VeDevice&, const string&, const int&, const int&
+		VeDevice &device, const string &file,
+		const int &color, const int &texture
 	);
 
 	VeModel(VeDevice&, const VeModel::Builder&, const int&);
