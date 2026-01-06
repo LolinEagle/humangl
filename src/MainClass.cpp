@@ -21,8 +21,7 @@ void	MainClass::loadCube(vem::vec3 translation, vem::vec3 scale){
 	loadGameObjects("cube", translation, scale);
 }
 
-MainClass::MainClass(const int &color, const int &texture)
-: _color(color), _texture(texture){
+MainClass::MainClass(void){
 	_globalPool = VeDescriptorPool::Builder(_veDevice)
 		.setMaxSets(MAX_FRAMES * 2)
 		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES)
