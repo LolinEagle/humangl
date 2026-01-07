@@ -2,7 +2,7 @@
 
 using namespace std;
 
-int	main(int ac, char **av){
+int	main(void){
 	MainClass	mainClass;
 
 	try {

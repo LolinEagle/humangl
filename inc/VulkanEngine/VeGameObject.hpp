@@ -6,6 +6,7 @@ using namespace std;
 
 struct TransformComponent{
 	vem::vec3	translation{};
+	vem::vec3	translationOffset{};
 	vem::vec3	scale{1.f, 1.f, 1.f};
 	vem::vec3	rotation{};
 

@@ -47,7 +47,7 @@ MainClass::MainClass(void){
 	loadCube({-1.f, 0.f, 0.f}, scale);
 
 	// Ground
-	loadCube({0.f, 2.5f, 0.f}, {16.f, 1.f, 16.f});
+	// loadCube({0.f, 2.5f, 0.f}, {16.f, 1.f, 16.f});
 }
 
 MainClass::~MainClass(){
@@ -101,7 +101,7 @@ void	MainClass::run(void){
 	VeCamera	camera{};
 	float		aspect;
 	auto		viewerObject = VeGameObject::createGameObject();
-	Controller	cameraController{_veWindow.getGLFWwindow()};
+	Controller	controller{_veWindow.getGLFWwindow(), _gameObjects};
 
 	// Time
 	auto		currentTime = chrono::high_resolution_clock::now();
@@ -110,8 +110,8 @@ void	MainClass::run(void){
 	int			frameIndex;
 
 	// Default value for camera
-	viewerObject._transform.translation = {-8.f, -2.0f, .0f};
-	viewerObject._transform.rotation = {.0f, 1.5f, .0f};
+	viewerObject._transform.translation = _cameraTranslation;
+	viewerObject._transform.rotation = _cameraRotation;
 	while (!_veWindow.shouldClose()){
 		glfwPollEvents();
 
@@ -120,7 +120,7 @@ void	MainClass::run(void){
 		frameTime = seconds_float(newTime - currentTime).count();
 		currentTime = newTime;
 
-		cameraController.moveInPlaneXZ(
+		controller.moveInPlaneXZ(
 			_veWindow.getGLFWwindow(), frameTime, viewerObject
 		);
 		camera.setViewYXZ(
@@ -145,7 +145,7 @@ void	MainClass::run(void){
 			ubo.projection = camera.getProjection();
 			ubo.view = camera.getView();
 			ubo.inverseView = camera.getInverseView();
-			ubo.textureOn = cameraController.getTextureOn();
+			ubo.textureOn = controller.getTextureOn();
 			pointLightSystem.update(frameInfo, ubo);
 			uboBuffers[frameIndex]->writeToBuffer(&ubo);
 			uboBuffers[frameIndex]->flush();
