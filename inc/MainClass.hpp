@@ -18,11 +18,13 @@ private:
 	VeWindow	_veWindow{WIDTH, HEIGHT};
 	VeDevice	_veDevice{_veWindow};
 	VeRenderer	_veRenderer{_veWindow, _veDevice};
-	int			_color = 1;
-	int			_texture = 0;
+	const int	_color = 1;
+	const int	_texture = 0;
 
 	unique_ptr<VeDescriptorPool>	_globalPool{};
 	VeGameObject::Map				_gameObjects;
+	const vem::vec3					_cameraTranslation = {0.f, -8.f, -24.f};
+	const vem::vec3					_cameraRotation = {0.f, 0.f, 0.f};
 
 	void	loadGameObjects(
 		const string &filepath, vem::vec3 translation, vem::vec3 scale

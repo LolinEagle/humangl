@@ -75,5 +75,5 @@ VkDescriptorBufferInfo	VeBuffer::descriptorBufferInfo(
 }
 
 VkBuffer				VeBuffer::getBuffer(void) const {
-	return(_buffer);
+	return (_buffer);
 }

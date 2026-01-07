@@ -8,7 +8,8 @@ void	scrollCallback(GLFWwindow *win, double xoffset, double yoffset){
 	gScroll = yoffset;
 }
 
-Controller::Controller(GLFWwindow *win){
+Controller::Controller(GLFWwindow *win, VeGameObject::Map &gameObjects)
+: _isJumping(false), _isFalling(false), _gameObjects(gameObjects){
 	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 	glfwSetScrollCallback(win, scrollCallback);
 }
@@ -76,4 +77,22 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	}
 	if (glfwGetKey(win, _keys.texture) == GLFW_RELEASE)
 		_textureOnPress = false;
+
+	// Jump
+	const float	&_currentY =
+		_gameObjects.begin()->second._transform.translationOffset.y;
+	if (glfwGetKey(win, _keys.space) && _isFalling == false) _isJumping = true;
+	if (_isJumping){
+		for (auto &obj: _gameObjects)
+			obj.second._transform.translationOffset.y -= _jumpSpeed * dt;
+		if (_currentY <= -_jumpHeight){
+			_isJumping = false;
+			_isFalling = true;
+		}
+	} else if (_isFalling){
+		for (auto &obj: _gameObjects)
+			obj.second._transform.translationOffset.y += _jumpSpeed * dt;
+		if (_currentY >= 0.0f)
+			_isFalling = false;
+	}
 }

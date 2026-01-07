@@ -27,7 +27,10 @@ vem::mat4	TransformComponent::mat4(void){
 			scale.z * (c1 * c2),
 			0.f,
 		},{
-			translation.x, translation.y, translation.z, 1.0f
+			translation.x + translationOffset.x,
+			translation.y + translationOffset.y,
+			translation.z + translationOffset.z,
+			1.0f
 		}
 	});
 }
