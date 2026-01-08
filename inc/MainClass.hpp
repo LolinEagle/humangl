@@ -25,6 +25,8 @@ private:
 	VeGameObject::Map				_gameObjects;
 	const vem::vec3					_cameraTranslation = {0.f, -8.f, -24.f};
 	const vem::vec3					_cameraRotation = {0.f, 0.f, 0.f};
+	const float						_near = .1f;
+	const float						_far = 128.f;
 
 	void	loadGameObjects(
 		const string &filepath, vem::vec3 translation, vem::vec3 scale
