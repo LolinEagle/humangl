@@ -47,7 +47,7 @@ MainClass::MainClass(void){
 	loadCube({-1.f, 0.f, 0.f}, scale);
 
 	// Ground
-	// loadCube({0.f, 2.5f, 0.f}, {16.f, 1.f, 16.f});
+	loadCube({0.f, 2.5f, 0.f}, {32.f, 1.f, 32.f});
 }
 
 MainClass::~MainClass(){
@@ -128,7 +128,7 @@ void	MainClass::run(void){
 			viewerObject._transform.rotation
 		);
 		aspect = _veRenderer.getAspectRatio();
-		camera.setPerspectiveProjection(vem::radians(50.), aspect, .1f, 64.f);
+		camera.setPerspectiveProjection(vem::radians(50.), aspect, _near, _far);
 		if (auto commandBuffer = _veRenderer.beginFrame()){
 			frameIndex = _veRenderer.getCurrentFrameIndex();
 			FrameInfo	frameInfo{
