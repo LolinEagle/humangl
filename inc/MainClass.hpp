@@ -23,16 +23,33 @@ private:
 
 	unique_ptr<VeDescriptorPool>	_globalPool{};
 	VeGameObject::Map				_gameObjects;
+	VeGameObject::MapPtr			_model;
 	const vem::vec3					_cameraTranslation = {0.f, -8.f, -24.f};
 	const vem::vec3					_cameraRotation = {0.f, 0.f, 0.f};
 	const float						_near = .1f;
 	const float						_far = 128.f;
 
 	void	loadGameObjects(
-		const string &filepath, vem::vec3 translation, vem::vec3 scale
+		const string &filepath,
+		vem::vec3 translation,
+		vem::vec3 scale,
+		uint bodyPart
 	);
-	void	loadCube(vem::vec3 translation, vem::vec3 scale);
 public:
+	enum Body {
+		NONE,
+		TORSO,
+		HEAD,
+		LEFT_UPPER_ARM,
+		LEFT_LOWER_ARM,
+		RIGHT_UPPER_ARM,
+		RIGHT_LOWER_ARM,
+		LEFT_UPPER_LEG,
+		LEFT_LOWER_LEG,
+		RIGHT_UPPER_LEG,
+		RIGHT_LOWER_LEG
+	};
+
 	MainClass(void);
 	~MainClass();
 

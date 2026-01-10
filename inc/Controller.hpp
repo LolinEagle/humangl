@@ -26,9 +26,10 @@ private:
 	const float			_jumpHeight = 3.f;
 	bool				_isJumping;
 	bool				_isFalling;
-	VeGameObject::Map	&_model;
+
+	VeGameObject::MapPtr	&_model;
 public:
-	Controller(GLFWwindow *win, VeGameObject::Map &model);
+	Controller(GLFWwindow *win, VeGameObject::MapPtr &model);
 	~Controller();
 
 	bool	getTextureOn(void) const;
