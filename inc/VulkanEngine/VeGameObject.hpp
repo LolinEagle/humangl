@@ -25,6 +25,7 @@ private:
 	VeGameObject(uint id);
 public:
 	using Map = unordered_map<uint, VeGameObject>;
+	using MapPtr = unordered_map<uint, VeGameObject*>;
 
 	vem::vec3						_color{};
 	TransformComponent				_transform{};

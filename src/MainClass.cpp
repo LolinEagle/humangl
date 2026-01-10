@@ -4,7 +4,10 @@ using namespace std;
 using seconds_float = chrono::duration<float, chrono::seconds::period>;
 
 void	MainClass::loadGameObjects(
-	const string &filepath, vem::vec3 translation, vem::vec3 scale
+		const string &filepath,
+		vem::vec3 translation,
+		vem::vec3 scale,
+		uint bodyPart = NONE
 ){
 	shared_ptr<VeModel>	veModel = VeModel::createModelFromFile(
 		_veDevice, "model/" + filepath + ".obj", _color, _texture
@@ -15,10 +18,8 @@ void	MainClass::loadGameObjects(
 	gameObject._transform.translation = translation;
 	gameObject._transform.scale = scale;
 	_gameObjects.emplace(gameObject.getId(), move(gameObject));
-}
-
-void	MainClass::loadCube(vem::vec3 translation, vem::vec3 scale){
-	loadGameObjects("cube", translation, scale);
+	if (bodyPart)
+		_model.emplace(bodyPart, &_gameObjects[gameObject.getId()]);
 }
 
 MainClass::MainClass(void){
@@ -30,24 +31,20 @@ MainClass::MainClass(void){
 
 	const vem::vec3	scale{1.f, 1.5f, 1.f};
 
-	// Head & Torso
-	loadCube({0.f, -12.5f, 0.f}, {2.f, 2.f, 2.f});
-	loadCube({0.f, -7.5f, 0.f}, {2.f, 3.f, 1.f});
-
-	// Arms
-	loadCube({3.f, -9.f, 0.f}, scale);
-	loadCube({-3.f, -9.f, 0.f}, scale);
-	loadCube({3.f, -6.f, 0.f}, scale);
-	loadCube({-3.f, -6.f, 0.f}, scale);
-
-	// Legs
-	loadCube({1.f, -3.f, 0.f}, scale);
-	loadCube({-1.f, -3.f, 0.f}, scale);
-	loadCube({1.f, 0.f, 0.f}, scale);
-	loadCube({-1.f, 0.f, 0.f}, scale);
+	// Body part
+	loadGameObjects("cube", {0.f, -7.5f, 0.f}, {2.f, 3.f, 1.f}, TORSO);
+	loadGameObjects("cube", {0.f, -12.5f, 0.f}, {2.f, 2.f, 2.f}, HEAD);
+	loadGameObjects("cube", {3.f, -9.f, 0.f}, scale, LEFT_UPPER_ARM);
+	loadGameObjects("cube", {3.f, -6.f, 0.f}, scale, LEFT_LOWER_ARM);
+	loadGameObjects("cube", {-3.f, -9.f, 0.f}, scale, RIGHT_UPPER_ARM);
+	loadGameObjects("cube", {-3.f, -6.f, 0.f}, scale, RIGHT_LOWER_ARM);
+	loadGameObjects("cube", {1.f, -3.f, 0.f}, scale, LEFT_UPPER_LEG);
+	loadGameObjects("cube", {1.f, 0.f, 0.f}, scale, LEFT_LOWER_LEG);
+	loadGameObjects("cube", {-1.f, -3.f, 0.f}, scale, RIGHT_UPPER_LEG);
+	loadGameObjects("cube", {-1.f, 0.f, 0.f}, scale, RIGHT_LOWER_LEG);
 
 	// Ground
-	loadCube({0.f, 2.5f, 0.f}, {32.f, 1.f, 32.f});
+	loadGameObjects("cube", {0.f, 2.5f, 0.f}, {32.f, 1.f, 32.f});
 }
 
 MainClass::~MainClass(){
@@ -101,7 +98,7 @@ void	MainClass::run(void){
 	VeCamera	camera{};
 	float		aspect;
 	auto		viewerObject = VeGameObject::createGameObject();
-	Controller	controller{_veWindow.getGLFWwindow(), _gameObjects};
+	Controller	controller{_veWindow.getGLFWwindow(), _model};
 
 	// Time
 	auto		currentTime = chrono::high_resolution_clock::now();
