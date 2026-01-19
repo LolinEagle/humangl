@@ -11,7 +11,7 @@ struct TransformComponent{
 	vem::vec3	rotation{};
 
 	vem::mat4	mat4(void);
-	vem::mat3	normalMatrix(void);	
+	vem::mat3	normalMatrix(void);
 };
 
 struct PointLightComponent{

@@ -49,9 +49,9 @@ fclean:clean shaderclean
 	${RM} ${NAME}
 
 re:fclean
-	make all
+	make -j all
 
-run:${NAME}
+run:re
 	clear
 	./${NAME}
 
