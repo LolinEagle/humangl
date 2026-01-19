@@ -4,10 +4,10 @@ using namespace std;
 using seconds_float = chrono::duration<float, chrono::seconds::period>;
 
 void	MainClass::loadGameObjects(
-		const string &filepath,
-		vem::vec3 translation,
-		vem::vec3 scale,
-		uint bodyPart = NONE
+	const string &filepath,
+	vem::vec3 translation,
+	vem::vec3 scale,
+	uint bodyPart = NONE
 ){
 	shared_ptr<VeModel>	veModel = VeModel::createModelFromFile(
 		_veDevice, "model/" + filepath + ".obj", _color, _texture

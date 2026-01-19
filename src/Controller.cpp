@@ -59,11 +59,11 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	// Mouse scroll
 	if (gScroll > 0){
 		moveDir += upDir;// Move up
-		gScroll -= 0.1;
+		gScroll -= .1;
 	}
 	if (gScroll < 0){
 		moveDir -= upDir;// Move down
-		gScroll += 0.1;
+		gScroll += .1;
 	}
 
 	// Translation
@@ -92,7 +92,7 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	} else if (_isFalling){
 		for (auto &obj: _model)
 			obj.second->_transform.translationOffset.y += _jumpSpeed * dt;
-		if (_currentY >= 0.0f)
+		if (_currentY >= 0.f)
 			_isFalling = false;
 	}
 }
