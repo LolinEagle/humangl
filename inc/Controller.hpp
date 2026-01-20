@@ -30,6 +30,13 @@ private:
 	const float	_jumpHeight = 3.f;
 	bool		_isJumping;
 	bool		_isFalling;
+
+	// Walk
+	const float	_walkSpeed = 8.f;
+	const float	_upperLength = 3.f;
+
+	void	swingModel(const int &bodyPart, const float &swingAngle);
+	void	resetModel(const int &bodyPart);
 public:
 	Controller(GLFWwindow *win, VeGameObject::MapPtr &model);
 	~Controller();
