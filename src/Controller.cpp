@@ -8,6 +8,35 @@ void	scrollCallback(GLFWwindow *win, double xoffset, double yoffset){
 	gScroll = yoffset;
 }
 
+void	Controller::swingModel(const int &bodyPart, const float &swingAngle){
+	auto	&torsoZ = _model[TORSO]->_transform.offset.z;
+
+	// Upper
+	auto	&part = _model[bodyPart]->_transform;
+	float	sign = part.translation.x < 0.f ? -1.f : 1.f;
+
+	part.offset.y = (swingAngle < 0.f ? swingAngle : -swingAngle) * .5f;
+	part.offset.z = swingAngle * sign * 1.5f + torsoZ;
+	part.rotation.x = swingAngle * sign;
+
+	// Lower
+	auto	&lowerPart = _model[bodyPart + 1]->_transform;
+
+	lowerPart.offset.y = _upperLength * cos(swingAngle * sign) - (
+		lowerPart.translation.y - part.translation.y - part.offset.y);
+	lowerPart.offset.z = _upperLength * sin(swingAngle * sign) - (
+		lowerPart.translation.z - part.translation.z - part.offset.z);
+	lowerPart.rotation.x = swingAngle * sign;
+}
+
+void	Controller::resetModel(const int &bodyPart){
+	auto	&part = _model[bodyPart]->_transform;
+
+	part.rotation.x = 0.f;
+	part.offset.z = 0.f;
+	part.offset.y = 0.f;
+}
+
 Controller::Controller(GLFWwindow *win, VeGameObject::MapPtr &model)
 : _isJumping(false), _isFalling(false), _model(model){
 	glfwSetInputMode(win, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
@@ -80,19 +109,40 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 
 	// Jump
 	const float	&_currentY =
-		_model.begin()->second->_transform.translationOffset.y;
+		_model.begin()->second->_transform.jumpOffset;
 	if (glfwGetKey(win, _keys.space) && _isFalling == false) _isJumping = true;
 	if (_isJumping){
 		for (auto &obj: _model)
-			obj.second->_transform.translationOffset.y -= _jumpSpeed * dt;
+			obj.second->_transform.jumpOffset -= _jumpSpeed * dt;
 		if (_currentY <= -_jumpHeight){
 			_isJumping = false;
 			_isFalling = true;
 		}
 	} else if (_isFalling){
 		for (auto &obj: _model)
-			obj.second->_transform.translationOffset.y += _jumpSpeed * dt;
+			obj.second->_transform.jumpOffset += _jumpSpeed * dt;
 		if (_currentY >= 0.f)
 			_isFalling = false;
+	}
+
+	// Walk
+	for (int i = TORSO; i <= RIGHT_LOWER_LEG; i++){
+		if (_model.find(i) == _model.end())
+			return ;
+	}
+	if (glfwGetKey(win, _keys.walk)){
+		auto	&torsoZ = _model[TORSO]->_transform.offset.z;
+
+		torsoZ -= _walkSpeed * dt;
+		_model[HEAD]->_transform.offset.z = torsoZ;
+
+		float	time = static_cast<float>(glfwGetTime());
+		float	swingAngle = radians(35.f * sin(3.f * time));
+
+		for (int i = LEFT_UPPER_ARM; i <= RIGHT_UPPER_LEG; i += 2)
+			swingModel(i, swingAngle);
+	} else {
+		for (int i = TORSO; i <= RIGHT_LOWER_LEG; i++)
+			resetModel(i);
 	}
 }
