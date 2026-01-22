@@ -7,7 +7,7 @@ void	MainClass::loadGameObjects(
 	const string &filepath,
 	vem::vec3 translation,
 	vem::vec3 scale,
-	uint bodyPart = NONE
+	int bodyPart = -1
 ){
 	shared_ptr<VeModel>	veModel = VeModel::createModelFromFile(
 		_veDevice, "model/" + filepath + ".obj", _color, _texture
@@ -18,7 +18,7 @@ void	MainClass::loadGameObjects(
 	gameObject._transform.translation = translation;
 	gameObject._transform.scale = scale;
 	_gameObjects.emplace(gameObject.getId(), move(gameObject));
-	if (bodyPart)
+	if (bodyPart != -1)
 		_model.emplace(bodyPart, &_gameObjects[gameObject.getId()]);
 }
 
@@ -34,6 +34,8 @@ MainClass::MainClass(void){
 	// Body part
 	loadGameObjects("cube", {0.f, -7.5f, 0.f}, {2.f, 3.f, 1.f}, TORSO);
 	loadGameObjects("cube", {0.f, -12.5f, 0.f}, {2.f, 2.f, 2.f}, HEAD);
+	loadGameObjects("cube", {0.f, -14.75f, 0.f}, {2.5f, .25f, 2.5f}, HAT_BASE);
+	loadGameObjects("cube", {0.f, -15.5f, 0.f}, {2.f, .5f, 2.f}, HAT);
 	loadGameObjects("cube", {3.f, -9.f, 0.f}, scale, LEFT_UPPER_ARM);
 	loadGameObjects("cube", {3.f, -6.f, 0.f}, scale, LEFT_LOWER_ARM);
 	loadGameObjects("cube", {-3.f, -9.f, 0.f}, scale, RIGHT_UPPER_ARM);

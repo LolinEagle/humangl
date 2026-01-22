@@ -126,23 +126,26 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	}
 
 	// Walk
-	for (int i = TORSO; i <= RIGHT_LOWER_LEG; i++){
+	for (int i = 0; i < BODY_LENGTH; i++){
 		if (_model.find(i) == _model.end())
 			return ;
 	}
 	if (glfwGetKey(win, _keys.walk)){
+		// Move torso, head and hat
 		auto	&torsoZ = _model[TORSO]->_transform.offset.z;
 
 		torsoZ -= _walkSpeed * dt;
-		_model[HEAD]->_transform.offset.z = torsoZ;
+		for (int i = HEAD; i < LEFT_UPPER_ARM; i++)
+			_model[i]->_transform.offset.z = torsoZ;
 
+		// Move arms and legs
 		float	time = static_cast<float>(glfwGetTime());
 		float	swingAngle = radians(35.f * sin(3.f * time));
 
 		for (int i = LEFT_UPPER_ARM; i <= RIGHT_UPPER_LEG; i += 2)
 			swingModel(i, swingAngle);
 	} else {
-		for (int i = TORSO; i <= RIGHT_LOWER_LEG; i++)
+		for (int i = 0; i < BODY_LENGTH; i++)
 			resetModel(i);
 	}
 }

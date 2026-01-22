@@ -33,7 +33,7 @@ private:
 		const string &filepath,
 		vem::vec3 translation,
 		vem::vec3 scale,
-		uint bodyPart
+		int bodyPart
 	);
 public:
 	MainClass(void);
