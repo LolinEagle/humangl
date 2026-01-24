@@ -22,9 +22,9 @@ void	Controller::swingModel(const int &bodyPart, const float &swingAngle){
 	// Lower
 	auto	&lowerPart = _model[bodyPart + 1]->_transform;
 
-	lowerPart.offset.y = _upperLength * cos(swingAngle * sign) - (
+	lowerPart.offset.y = lowerPart.scale.y * 2.f * cos(swingAngle * sign) - (
 		lowerPart.translation.y - part.translation.y - part.offset.y);
-	lowerPart.offset.z = _upperLength * sin(swingAngle * sign) - (
+	lowerPart.offset.z = lowerPart.scale.y * 2.f * sin(swingAngle * sign) - (
 		lowerPart.translation.z - part.translation.z - part.offset.z);
 	lowerPart.rotation.x = swingAngle * sign;
 }
@@ -77,7 +77,7 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	const vec3	forwardDir{sin(yaw), 0.f, cos(yaw)};		// Forward
 	const vec3	rightDir{forwardDir.z, 0.f, -forwardDir.x};	// Right
 	const vec3	upDir{0.f, -1.f, 0.f};						// Up
-	vec3		moveDir{0};									// Move
+	vec3		moveDir{};									// Move
 
 	// Keyboard input
 	if (glfwGetKey(win, _keys.moveForward)) moveDir += forwardDir;
@@ -86,11 +86,11 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	if (glfwGetKey(win, _keys.moveRight)) moveDir += rightDir;
 
 	// Mouse scroll
-	if (gScroll > 0){
+	if (gScroll > 0.){
 		moveDir += upDir;// Move up
 		gScroll -= .1;
 	}
-	if (gScroll < 0){
+	if (gScroll < 0.){
 		moveDir -= upDir;// Move down
 		gScroll += .1;
 	}
@@ -135,7 +135,7 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 		auto	&torsoZ = _model[TORSO]->_transform.offset.z;
 
 		torsoZ -= _walkSpeed * dt;
-		for (int i = HEAD; i < LEFT_UPPER_ARM; i++)
+		for (int i = HEAD; i <= HAT; i++)
 			_model[i]->_transform.offset.z = torsoZ;
 
 		// Move arms and legs

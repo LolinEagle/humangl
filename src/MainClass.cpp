@@ -22,6 +22,17 @@ void	MainClass::loadGameObjects(
 		_model.emplace(bodyPart, &_gameObjects[gameObject.getId()]);
 }
 
+vem::vec3	makeT(
+	const vem::vec3 &base,
+	const float &baseScale,
+	const float &newScale,
+	float offsetX = 0.f
+){
+	return (vem::vec3(
+		base.x - offsetX, base.y - baseScale - newScale , base.z
+	));
+}
+
 MainClass::MainClass(void){
 	_globalPool = VeDescriptorPool::Builder(_veDevice)
 		.setMaxSets(MAX_FRAMES * 2)
@@ -29,24 +40,45 @@ MainClass::MainClass(void){
 		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES)
 		.build();
 
-	const vem::vec3	scale{1.f, 1.5f, 1.f};
+	// Scale
+	cV3	torsoS{2.f, 3.f, 1.f};
+	cV3	headS{2.f, 2.f, 2.f};
+	cV3	hatBaseS{2.5f, .25f, 2.5f};
+	cV3	hatS{2.f, .5f, 2.f};
+	cV3	limbsS{1.f, 1.5f, 1.f};
+	cV3	groundS{32.f, .1f, 32.f};
+
+	// Translation
+	cV3	torso{0.f, -7.5f, 0.f};
+	cV3	head = makeT(torso, torsoS.y, headS.y);
+	cV3	hatBase = makeT(head, headS.y, hatBaseS.y);
+	cV3	hat = makeT(hatBase, hatBaseS.y, hatS.y);
+	cV3	leftUpperArm = makeT(head, -headS.y, -limbsS.y, torsoS.x + limbsS.x);
+	cV3	leftLowerArm = makeT(leftUpperArm, -limbsS.y, -limbsS.y);
+	cV3	rightUpperArm = makeT(head, -headS.y, -limbsS.y, -torsoS.x - limbsS.x);
+	cV3	rightLowerArm = makeT(rightUpperArm, -limbsS.y, -limbsS.y);
+	cV3	leftUpperLeg = makeT(torso, -torsoS.y, -limbsS.y, limbsS.x);
+	cV3	leftLowerLeg = makeT(leftUpperLeg, -limbsS.y, -limbsS.y);
+	cV3	rightUpperLeg = makeT(torso, -torsoS.y, -limbsS.y, -limbsS.x);
+	cV3	rightLowerLeg = makeT(rightUpperLeg, -limbsS.y, -limbsS.y);
+	cV3	ground = makeT(torso, -torsoS.y - groundS.y, -limbsS.y * 4.f);
 
 	// Body part
-	loadGameObjects("cube", {0.f, -7.5f, 0.f}, {2.f, 3.f, 1.f}, TORSO);
-	loadGameObjects("cube", {0.f, -12.5f, 0.f}, {2.f, 2.f, 2.f}, HEAD);
-	loadGameObjects("cube", {0.f, -14.75f, 0.f}, {2.5f, .25f, 2.5f}, HAT_BASE);
-	loadGameObjects("cube", {0.f, -15.5f, 0.f}, {2.f, .5f, 2.f}, HAT);
-	loadGameObjects("cube", {3.f, -9.f, 0.f}, scale, LEFT_UPPER_ARM);
-	loadGameObjects("cube", {3.f, -6.f, 0.f}, scale, LEFT_LOWER_ARM);
-	loadGameObjects("cube", {-3.f, -9.f, 0.f}, scale, RIGHT_UPPER_ARM);
-	loadGameObjects("cube", {-3.f, -6.f, 0.f}, scale, RIGHT_LOWER_ARM);
-	loadGameObjects("cube", {1.f, -3.f, 0.f}, scale, LEFT_UPPER_LEG);
-	loadGameObjects("cube", {1.f, 0.f, 0.f}, scale, LEFT_LOWER_LEG);
-	loadGameObjects("cube", {-1.f, -3.f, 0.f}, scale, RIGHT_UPPER_LEG);
-	loadGameObjects("cube", {-1.f, 0.f, 0.f}, scale, RIGHT_LOWER_LEG);
+	loadGameObjects("cube", torso, torsoS, TORSO);
+	loadGameObjects("cube", head, headS, HEAD);
+	loadGameObjects("cube", hatBase, hatBaseS, HAT_BASE);
+	loadGameObjects("cube", hat, hatS, HAT);
+	loadGameObjects("cube", leftUpperArm, limbsS, LEFT_UPPER_ARM);
+	loadGameObjects("cube", leftLowerArm, limbsS, LEFT_LOWER_ARM);
+	loadGameObjects("cube", rightUpperArm, limbsS, RIGHT_UPPER_ARM);
+	loadGameObjects("cube", rightLowerArm, limbsS, RIGHT_LOWER_ARM);
+	loadGameObjects("cube", leftUpperLeg, limbsS, LEFT_UPPER_LEG);
+	loadGameObjects("cube", leftLowerLeg, limbsS, LEFT_LOWER_LEG);
+	loadGameObjects("cube", rightUpperLeg, limbsS, RIGHT_UPPER_LEG);
+	loadGameObjects("cube", rightLowerLeg, limbsS, RIGHT_LOWER_LEG);
 
 	// Ground
-	loadGameObjects("cube", {0.f, 2.5f, 0.f}, {32.f, 1.f, 32.f});
+	loadGameObjects("cube", ground, groundS);
 }
 
 MainClass::~MainClass(){
@@ -67,9 +99,11 @@ void	MainClass::run(void){
 	}
 
 	auto	globalSetLayout = VeDescriptorSetLayout::Builder(_veDevice)
-		.addBinding(0, (VkDescriptorType)6, VK_SHADER_STAGE_ALL_GRAPHICS)
-		.addBinding(1, (VkDescriptorType)1, VK_SHADER_STAGE_FRAGMENT_BIT)
-		.build();
+		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_ALL_GRAPHICS)
+		.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
+			VK_SHADER_STAGE_FRAGMENT_BIT)
+	.build();
 	vector<VkDescriptorSet>	globalDescriptorSets(MAX_FRAMES);
 	for (int i = 0; i < globalDescriptorSets.size(); i++){
 		VkDescriptorBufferInfo	buffer = uboBuffers[i]->descriptorBufferInfo();

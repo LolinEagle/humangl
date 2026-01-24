@@ -36,6 +36,8 @@ private:
 		int bodyPart
 	);
 public:
+	using cV3 = const vem::vec3;
+
 	MainClass(void);
 	~MainClass();
 

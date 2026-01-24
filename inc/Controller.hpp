@@ -33,7 +33,6 @@ private:
 
 	// Walk
 	const float	_walkSpeed = 8.f;
-	const float	_upperLength = 3.f;
 
 	void	swingModel(const int &bodyPart, const float &swingAngle);
 	void	resetModel(const int &bodyPart);
