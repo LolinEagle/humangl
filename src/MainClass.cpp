@@ -33,13 +33,7 @@ vem::vec3	makeT(
 	));
 }
 
-MainClass::MainClass(void){
-	_globalPool = VeDescriptorPool::Builder(_veDevice)
-		.setMaxSets(MAX_FRAMES * 2)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES)
-		.build();
-
+void	MainClass::loadHumanGL(void){
 	// Scale
 	cV3	torsoS{2.f, 3.f, 1.f};
 	cV3	headS{2.f, 2.f, 2.f};
@@ -79,6 +73,25 @@ MainClass::MainClass(void){
 
 	// Ground
 	loadGameObjects("cube", ground, groundS);
+}
+
+void	MainClass::loadScop(void){
+	loadGameObjects("42", {-2.f, -.2f,  1.f}, {1.f, -1.f, 1.f});
+	loadGameObjects("cube", {-2.f,  0.f, -2.f}, {1.f,  1.f, 1.f});
+	loadGameObjects("teapot", {2.f,  1.1f,  2.f}, {1.f, -1.f, 1.f});
+	loadGameObjects("teapot2", {2.f, -.3f, -2.f}, {1.f, -1.f, 1.f});
+	loadGameObjects("cube", {0.f,  1.2f,  0.f}, {8.f,  .1f, 8.f});
+}
+
+MainClass::MainClass(int scene, int color, int texture)
+: _color(color), _texture(texture){
+	_globalPool = VeDescriptorPool::Builder(_veDevice)
+		.setMaxSets(MAX_FRAMES * 2)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES)
+		.build();
+	if (scene == HUMANGL) loadHumanGL();
+	else if (scene == SCOP) loadScop();
 }
 
 MainClass::~MainClass(){

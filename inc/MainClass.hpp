@@ -18,8 +18,8 @@ private:
 	VeWindow	_veWindow{WIDTH, HEIGHT};
 	VeDevice	_veDevice{_veWindow};
 	VeRenderer	_veRenderer{_veWindow, _veDevice};
-	const int	_color = 1;
-	const int	_texture = 0;
+	int			_color;
+	int			_texture;
 
 	unique_ptr<VeDescriptorPool>	_globalPool{};
 	VeGameObject::Map				_gameObjects;
@@ -35,10 +35,12 @@ private:
 		vem::vec3 scale,
 		int bodyPart
 	);
+	void	loadHumanGL(void);
+	void	loadScop(void);
 public:
 	using cV3 = const vem::vec3;
 
-	MainClass(void);
+	MainClass(int scene, int color, int texture);
 	~MainClass();
 
 	void	run(void);

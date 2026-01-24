@@ -50,3 +50,8 @@ enum Body{
 	RIGHT_LOWER_LEG,
 	BODY_LENGTH
 };
+
+enum Scene{
+	HUMANGL,
+	SCOP
+};

@@ -108,6 +108,8 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 		_textureOnPress = false;
 
 	// Jump
+	if (_model.size() == 0)
+		return ;
 	const float	&_currentY =
 		_model.begin()->second->_transform.jumpOffset;
 	if (glfwGetKey(win, _keys.space) && _isFalling == false) _isJumping = true;
