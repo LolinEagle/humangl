@@ -98,6 +98,8 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	if (glfwGetKey(win, _keys.moveLeft)) moveDir -= rightDir;
 	if (glfwGetKey(win, _keys.moveBackward)) moveDir -= forwardDir;
 	if (glfwGetKey(win, _keys.moveRight)) moveDir += rightDir;
+	if (glfwGetKey(win, _keys.moveUp)) moveDir += upDir;
+	if (glfwGetKey(win, _keys.moveDown)) moveDir -= upDir;
 	
 
 	// Mouse scroll
