@@ -13,6 +13,13 @@ private:
 		const int	texture = GLFW_KEY_F;
 		const int	escape = GLFW_KEY_ESCAPE;
 		const int	space = GLFW_KEY_SPACE;
+		
+		const int	camUp = GLFW_KEY_UP;
+		const int	camDown = GLFW_KEY_DOWN;
+		const int	camLeft = GLFW_KEY_LEFT;
+		const int	camRight = GLFW_KEY_RIGHT;
+
+		const int	mouse = GLFW_KEY_M;
 	};
 
 	const KeyMappings		_keys{};
@@ -30,6 +37,8 @@ private:
 	const float	_jumpHeight = 3.f;
 	bool		_isJumping;
 	bool		_isFalling;
+
+	bool		_mouseEnable = false;
 
 	// Walk
 	const float	_walkSpeed = 8.f;
