@@ -54,18 +54,32 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	// Escape
 	if (glfwGetKey(win, _keys.escape)) glfwSetWindowShouldClose(win, GLFW_TRUE);
 
-	double	newXpos, newYpos;	// New cursor position
+	double	newXpos = 0, newYpos = 0;	// New cursor position
 	vec3	rotate{0};			// Rotate camera
 
 	// Mouse input
-	glfwGetCursorPos(win, &newXpos, &newYpos);
-	if (newXpos < 0 || newYpos < 0 || newXpos > WIDTH || newYpos > HEIGHT)
-		return ;
-	if (HEIGHT_HALF > newYpos + _lookOffset) rotate.x += 1.f;	// Look up
-	if (HEIGHT_HALF < newYpos - _lookOffset) rotate.x -= 1.f;	// Look down
-	if (WIDTH_HALF < newXpos + _lookOffset) rotate.y += 1.f;	// Look right
-	if (WIDTH_HALF > newXpos - _lookOffset) rotate.y -= 1.f;	// Look left
-	glfwSetCursorPos(win, WIDTH_HALF, HEIGHT_HALF);				// Lock cursor
+	if (glfwGetKey(win, _keys.mouse))
+		_mouseEnable = true;
+	else 
+		_mouseEnable = false;
+
+	if (_mouseEnable)
+	{
+		glfwGetCursorPos(win, &newXpos, &newYpos);
+		if (newXpos < 0 || newYpos < 0 || newXpos > WIDTH || newYpos > HEIGHT)
+			return ;
+		if (HEIGHT_HALF > newYpos + _lookOffset) rotate.x += 1.f;	// Look up
+		if (HEIGHT_HALF < newYpos - _lookOffset) rotate.x -= 1.f;	// Look down
+		if (WIDTH_HALF < newXpos + _lookOffset) rotate.y += 1.f;	// Look right
+		if (WIDTH_HALF > newXpos - _lookOffset) rotate.y -= 1.f;	// Look left
+		glfwSetCursorPos(win, WIDTH_HALF, HEIGHT_HALF);				// Lock cursor
+	}
+	else {
+		if (glfwGetKey(win, _keys.camUp)) rotate.x += 1.f;		// Look up
+		if (glfwGetKey(win, _keys.camDown)) rotate.x -= 1.f;	// Look down
+		if (glfwGetKey(win, _keys.camRight)) rotate.y += 1.f;	// Look right
+		if (glfwGetKey(win, _keys.camLeft)) rotate.y -= 1.f;	// Look left
+	}
 
 	// Rotation
 	if (dot(rotate, rotate) > numeric_limits<float>::epsilon())
@@ -84,6 +98,7 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	if (glfwGetKey(win, _keys.moveLeft)) moveDir -= rightDir;
 	if (glfwGetKey(win, _keys.moveBackward)) moveDir -= forwardDir;
 	if (glfwGetKey(win, _keys.moveRight)) moveDir += rightDir;
+	
 
 	// Mouse scroll
 	if (gScroll > 0.){
