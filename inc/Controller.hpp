@@ -9,6 +9,9 @@ private:
 		const int	moveLeft = GLFW_KEY_A;
 		const int	moveBackward = GLFW_KEY_S;
 		const int	moveRight = GLFW_KEY_D;
+		const int	moveUp = GLFW_KEY_LEFT_CONTROL;
+		const int	moveDown = GLFW_KEY_LEFT_SHIFT;
+
 		const int	walk = GLFW_KEY_E;
 		const int	texture = GLFW_KEY_F;
 		const int	escape = GLFW_KEY_ESCAPE;
