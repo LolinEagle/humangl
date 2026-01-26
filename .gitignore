@@ -47,3 +47,10 @@
 
 # My executables
 humangl
+
+# Maix' trash
+.cache
+.dev
+.envrc
+compile_commands.json
+
