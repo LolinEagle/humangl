@@ -43,7 +43,10 @@ SPIRV_PATH	=	./spirv/
 SHADER_SRC	=	simpleShader.vert \
 				simpleShader.frag \
 				pointLight.vert \
-				pointLight.frag
+				pointLight.frag \
+				skybox.vert \
+				skybox.frag
+
 SPIRV_OBJ	=	${addprefix ${SPIRV_PATH},${addsuffix .spv,${SHADER_SRC}}}
 
 all:${NAME}
