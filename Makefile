@@ -37,14 +37,13 @@ OBJ_DIRS	=	${OBJ_PATH}
 OBJ			=	${addprefix ${OBJ_PATH},${SRC:.cpp=.o}}
 DEP			=	${addprefix ${OBJ_PATH},${SRC:.cpp=.d}}
 
+# Shader Path
 SHADER_PATH	=	./shader/
 SPIRV_PATH	=	./spirv/
-
 SHADER_SRC	=	simpleShader.vert \
 				simpleShader.frag \
 				pointLight.vert \
 				pointLight.frag
-
 SPIRV_OBJ	=	${addprefix ${SPIRV_PATH},${addsuffix .spv,${SHADER_SRC}}}
 
 all:${NAME}
@@ -75,6 +74,7 @@ ${OBJ_PATH}%.o:${SRC_PATH}%.cpp
 
 ${OBJ_DIRS}:
 	mkdir ${OBJ_DIRS} ${OBJ_PATH_VE}
+
 ${SPIRV_PATH}:
 	mkdir ${SPIRV_PATH}
 

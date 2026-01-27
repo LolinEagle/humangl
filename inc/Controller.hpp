@@ -5,6 +5,7 @@
 class Controller{
 private:
 	struct KeyMappings{
+		// Movement
 		const int	moveForward = GLFW_KEY_W;
 		const int	moveLeft = GLFW_KEY_A;
 		const int	moveBackward = GLFW_KEY_S;
@@ -12,17 +13,18 @@ private:
 		const int	moveUp = GLFW_KEY_LEFT_CONTROL;
 		const int	moveDown = GLFW_KEY_LEFT_SHIFT;
 
+		// Actions
 		const int	walk = GLFW_KEY_E;
 		const int	texture = GLFW_KEY_F;
 		const int	escape = GLFW_KEY_ESCAPE;
 		const int	space = GLFW_KEY_SPACE;
 		
+		// Camera
+		const int	mouse = GLFW_KEY_M;
 		const int	camUp = GLFW_KEY_UP;
 		const int	camDown = GLFW_KEY_DOWN;
 		const int	camLeft = GLFW_KEY_LEFT;
 		const int	camRight = GLFW_KEY_RIGHT;
-
-		const int	mouse = GLFW_KEY_M;
 	};
 
 	const KeyMappings		_keys{};
@@ -34,14 +36,13 @@ private:
 	const float	_lookOffset = 2.f;
 	bool		_textureOn = false;
 	bool		_textureOnPress;
+	bool		_mouseEnable = false;
 
 	// Jump
 	const float	_jumpSpeed = 16.f;
 	const float	_jumpHeight = 3.f;
 	bool		_isJumping;
 	bool		_isFalling;
-
-	bool		_mouseEnable = false;
 
 	// Walk
 	const float	_walkSpeed = 8.f;

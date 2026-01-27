@@ -54,8 +54,8 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	// Escape
 	if (glfwGetKey(win, _keys.escape)) glfwSetWindowShouldClose(win, GLFW_TRUE);
 
-	double	newXpos = 0, newYpos = 0;	// New cursor position
-	vec3	rotate{0};			// Rotate camera
+	double	newXpos = 0., newYpos = 0.;	// New cursor position
+	vec3	rotate{};					// Rotate camera
 
 	// Mouse input
 	if (glfwGetKey(win, _keys.mouse))
@@ -63,18 +63,16 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	else 
 		_mouseEnable = false;
 
-	if (_mouseEnable)
-	{
+	if (_mouseEnable){
 		glfwGetCursorPos(win, &newXpos, &newYpos);
-		if (newXpos < 0 || newYpos < 0 || newXpos > WIDTH || newYpos > HEIGHT)
+		if (newXpos < 0. || newYpos < 0. || newXpos > WIDTH || newYpos > HEIGHT)
 			return ;
-		if (HEIGHT_HALF > newYpos + _lookOffset) rotate.x += 1.f;	// Look up
-		if (HEIGHT_HALF < newYpos - _lookOffset) rotate.x -= 1.f;	// Look down
-		if (WIDTH_HALF < newXpos + _lookOffset) rotate.y += 1.f;	// Look right
-		if (WIDTH_HALF > newXpos - _lookOffset) rotate.y -= 1.f;	// Look left
-		glfwSetCursorPos(win, WIDTH_HALF, HEIGHT_HALF);				// Lock cursor
-	}
-	else {
+		if (HEIGHT_HALF > newYpos + _lookOffset) rotate.x += 1.f;	// Up
+		if (HEIGHT_HALF < newYpos - _lookOffset) rotate.x -= 1.f;	// Down
+		if (WIDTH_HALF < newXpos + _lookOffset) rotate.y += 1.f;	// Right
+		if (WIDTH_HALF > newXpos - _lookOffset) rotate.y -= 1.f;	// Left
+		glfwSetCursorPos(win, WIDTH_HALF, HEIGHT_HALF);			// Lock cursor
+	} else {
 		if (glfwGetKey(win, _keys.camUp)) rotate.x += 1.f;		// Look up
 		if (glfwGetKey(win, _keys.camDown)) rotate.x -= 1.f;	// Look down
 		if (glfwGetKey(win, _keys.camRight)) rotate.y += 1.f;	// Look right
@@ -100,7 +98,6 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 	if (glfwGetKey(win, _keys.moveRight)) moveDir += rightDir;
 	if (glfwGetKey(win, _keys.moveUp)) moveDir += upDir;
 	if (glfwGetKey(win, _keys.moveDown)) moveDir -= upDir;
-	
 
 	// Mouse scroll
 	if (gScroll > 0.){
