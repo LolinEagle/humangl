@@ -40,4 +40,5 @@ void	main(void){
 	vec4 pos = ubo.projection * ubo.view * positionWorld;
 
 	gl_Position = pos.xyww;
+	gl_Position.z *= 0.999;
 }

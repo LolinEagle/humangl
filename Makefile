@@ -4,6 +4,7 @@ SRC			=	main.cpp\
 				MainClass.cpp\
 				PointLight.cpp\
 				SimpleRender.cpp\
+				SkyboxRender.cpp\
 				vem.cpp\
 				VulkanEngine/VeBuffer.cpp\
 				VulkanEngine/VeCamera.cpp\

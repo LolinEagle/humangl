@@ -9,28 +9,17 @@
 using namespace std;
 using DSLayout = VkDescriptorSetLayout;
 
-struct PushConstantData{
-	vem::mat4	modelMatrix{1.f};
-	vem::mat4	normalMatrix{1.f};
-};
-
-class SimpleRender{
+class SkyboxRender{
 private:
 	VeDevice				&_veDevice;
 	unique_ptr<VePipeline>	_vePipeline;
 	VkPipelineLayout		_pipelineLayout;
 
-	unordered_set<uint>		_ignoredObjects;
-
 	void	createPipelineLayout(DSLayout globalSetLayout);
 	void	createPipeline(VkRenderPass renderPass);
-
 public:
-	SimpleRender(VeDevice &d, VkRenderPass rp, DSLayout layout);
-	~SimpleRender();
+	SkyboxRender(VeDevice &d, VkRenderPass rp, DSLayout layout);
+	~SkyboxRender();
 
-	void						renderObjects(FrameInfo &frameInfo);
-	void						addIgnoredObject(const uint id);
-	void						removeIgnoredObject(const uint id);
-	const unordered_set<uint>	&getIgnoredObject();
+	void	renderSkybox(FrameInfo &frameInfo, VeGameObject &skybox);
 };
