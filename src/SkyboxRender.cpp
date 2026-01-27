@@ -1,7 +1,7 @@
+#include <SkyboxRender.hpp>
 #include <SimpleRender.hpp>
-#include <algorithm>
 
-void	SimpleRender::createPipelineLayout(DSLayout gSetLayout){
+void	SkyboxRender::createPipelineLayout(DSLayout gSetLayout){
 	VkPushConstantRange	pushConstantRange{};
 	pushConstantRange.stageFlags =
 		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -20,10 +20,10 @@ void	SimpleRender::createPipelineLayout(DSLayout gSetLayout){
 	if (vkCreatePipelineLayout(
 		_veDevice.device(), &layoutInfo, nullptr, &_pipelineLayout
 	) != 0)
-		throw (runtime_error("failed to create pipeline layout"));
+		throw (runtime_error("failed to create skybox pipeline layout"));
 }
 
-void	SimpleRender::createPipeline(VkRenderPass renderPass){
+void	SkyboxRender::createPipeline(VkRenderPass renderPass){
 	PipelineConfigInfo	pipelineConfig{};
 	VePipeline::defaultPipelineConfigInfo(pipelineConfig);
 	pipelineConfig.renderPass = renderPass;
@@ -31,35 +31,26 @@ void	SimpleRender::createPipeline(VkRenderPass renderPass){
 
 	_vePipeline = make_unique<VePipeline>(
 		_veDevice,
-		"spirv/simpleShader.vert.spv",
-		"spirv/simpleShader.frag.spv",
+		"spirv/skybox.vert.spv",
+		"spirv/skybox.frag.spv",
 		pipelineConfig
 	);
 }
 
-SimpleRender::SimpleRender(VeDevice &d, VkRenderPass rp, DSLayout layout)
+SkyboxRender::SkyboxRender(VeDevice &d, VkRenderPass rp, DSLayout layout)
 : _veDevice(d){
 	createPipelineLayout(layout);
 	createPipeline(rp);
 }
 
-SimpleRender::~SimpleRender(){
+SkyboxRender::~SkyboxRender(){
 	vkDestroyPipelineLayout(_veDevice.device(), _pipelineLayout, nullptr);
 }
 
-void SimpleRender::addIgnoredObject(const uint objectId){
-	_ignoredObjects.insert(objectId);
-}
-
-void SimpleRender::removeIgnoredObject(const uint objectId){
-	_ignoredObjects.erase(objectId);
-}
-
-const unordered_set<uint> &SimpleRender::getIgnoredObject(){
-	return _ignoredObjects;
-}
-
-void	SimpleRender::renderObjects(FrameInfo &frameInfo){
+void	SkyboxRender::renderSkybox(FrameInfo &frameInfo, VeGameObject & skybox){
+	auto	&obj = skybox;
+	if (obj._model == nullptr)
+		return ;
 	_vePipeline->bind(frameInfo.commandBuffer);
 	vkCmdBindDescriptorSets(
 		frameInfo.commandBuffer,
@@ -71,27 +62,19 @@ void	SimpleRender::renderObjects(FrameInfo &frameInfo){
 		0,
 		nullptr
 	);
-	for (auto &kv: frameInfo.gameObject){
-		auto	&obj = kv.second;
-		if (obj._model == nullptr)
-			continue ;
-		// is it in the list of ignored object ?
-		if (_ignoredObjects.contains(kv.first))
-			continue ;
 
-		PushConstantData	push{};
-		push.modelMatrix = obj._transform.mat4();
-		push.normalMatrix = obj._transform.normalMatrix();
+	PushConstantData	push{};
+	push.modelMatrix = obj._transform.mat4();
+	push.normalMatrix = obj._transform.normalMatrix();
 
-		vkCmdPushConstants(
-			frameInfo.commandBuffer,
-			_pipelineLayout,
-			VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-			0,
-			sizeof(PushConstantData),
-			&push
-		);
-		obj._model->bind(frameInfo.commandBuffer);
-		obj._model->draw(frameInfo.commandBuffer);
-	}
+	vkCmdPushConstants(
+		frameInfo.commandBuffer,
+		_pipelineLayout,
+		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+		0,
+		sizeof(PushConstantData),
+		&push
+	);
+	obj._model->bind(frameInfo.commandBuffer);
+	obj._model->draw(frameInfo.commandBuffer);
 }

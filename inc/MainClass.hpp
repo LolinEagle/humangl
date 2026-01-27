@@ -15,11 +15,13 @@ using namespace std;
 
 class MainClass{
 private:
-	VeWindow	_veWindow{WIDTH, HEIGHT};
-	VeDevice	_veDevice{_veWindow};
-	VeRenderer	_veRenderer{_veWindow, _veDevice};
-	int			_color;
-	int			_texture;
+	VeWindow		_veWindow{WIDTH, HEIGHT};
+	VeDevice		_veDevice{_veWindow};
+	VeRenderer		_veRenderer{_veWindow, _veDevice};
+	int				_color;
+	int				_texture;
+
+	VeGameObject	*_skybox = nullptr;
 
 	unique_ptr<VeDescriptorPool>	_globalPool{};
 	VeGameObject::Map				_gameObjects;
@@ -29,14 +31,14 @@ private:
 	const float						_near = .1f;
 	const float						_far = 128.f;
 
-	void	loadGameObjects(
+	const uint	loadGameObjects(
 		const string &filepath,
 		vem::vec3 translation,
 		vem::vec3 scale,
 		int bodyPart
 	);
-	void	loadHumanGL(void);
-	void	loadScop(void);
+	void		loadHumanGL(void);
+	void		loadScop(void);
 public:
 	using cV3 = const vem::vec3;
 

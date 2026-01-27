@@ -1,9 +1,10 @@
+#include "SkyboxRender.hpp"
 #include <MainClass.hpp>
 
 using namespace std;
 using seconds_float = chrono::duration<float, chrono::seconds::period>;
 
-void	MainClass::loadGameObjects(
+const uint	MainClass::loadGameObjects(
 	const string &filepath,
 	vem::vec3 translation,
 	vem::vec3 scale,
@@ -17,9 +18,10 @@ void	MainClass::loadGameObjects(
 	gameObject._model = veModel;
 	gameObject._transform.translation = translation;
 	gameObject._transform.scale = scale;
-	_gameObjects.emplace(gameObject.getId(), move(gameObject));
+	_gameObjects.emplace(gameObject.getId(), std::move(gameObject));
 	if (bodyPart != -1)
 		_model.emplace(bodyPart, &_gameObjects[gameObject.getId()]);
+	return gameObject.getId();
 }
 
 vem::vec3	makeT(
@@ -41,6 +43,7 @@ void	MainClass::loadHumanGL(void){
 	cV3	hatS{2.f, .5f, 2.f};
 	cV3	limbsS{1.f, 1.5f, 1.f};
 	cV3	groundS{32.f, .1f, 32.f};
+	cV3	skybox{128.f, 128.f, 128.f};
 
 	// Translation
 	cV3	torso{0.f, -7.5f, 0.f};
@@ -73,6 +76,11 @@ void	MainClass::loadHumanGL(void){
 
 	// Ground
 	loadGameObjects("cube", ground, groundS);
+	
+	// Skybox
+	auto skyboxId = loadGameObjects("cube", {0.f, 0.f, 0.f}, skybox);
+	_skybox = &_gameObjects[skyboxId];
+
 }
 
 void	MainClass::loadScop(void){
@@ -144,6 +152,12 @@ void	MainClass::run(void){
 		globalSetLayout->getDescriptorSetLayout()
 	};
 
+	SkyboxRender	skyboxRenderSystem{
+		_veDevice,
+		_veRenderer.getSwapchainRenderPass(),
+		globalSetLayout->getDescriptorSetLayout()
+	};
+
 	VeCamera	camera{};
 	float		aspect;
 	auto		viewerObject = VeGameObject::createGameObject();
@@ -158,6 +172,10 @@ void	MainClass::run(void){
 	// Default value for camera
 	viewerObject._transform.translation = _cameraTranslation;
 	viewerObject._transform.rotation = _cameraRotation;
+	
+	if (_skybox != nullptr)
+		simpleRenderSystem.addIgnoredObject(_skybox->getId());
+
 	while (!_veWindow.shouldClose()){
 		glfwPollEvents();
 
@@ -200,6 +218,8 @@ void	MainClass::run(void){
 			_veRenderer.beginSwapChainRenderPass(commandBuffer);
 			simpleRenderSystem.renderObjects(frameInfo);
 			pointLightSystem.render(frameInfo);
+			if (_skybox != nullptr)
+				skyboxRenderSystem.renderSkybox(frameInfo, *_skybox);
 			_veRenderer.endSwapChainRenderPass(commandBuffer);
 			_veRenderer.endFrame();
 		}
