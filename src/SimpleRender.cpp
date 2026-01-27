@@ -30,8 +30,8 @@ void	SimpleRender::createPipeline(VkRenderPass renderPass){
 
 	_vePipeline = make_unique<VePipeline>(
 		_veDevice,
-		"shader/simpleShader.vert.spv",
-		"shader/simpleShader.frag.spv",
+		"spirv/simpleShader.vert.spv",
+		"spirv/simpleShader.frag.spv",
 		pipelineConfig
 	);
 }

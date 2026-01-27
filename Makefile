@@ -37,13 +37,23 @@ OBJ_DIRS	=	${OBJ_PATH}
 OBJ			=	${addprefix ${OBJ_PATH},${SRC:.cpp=.o}}
 DEP			=	${addprefix ${OBJ_PATH},${SRC:.cpp=.d}}
 
+SHADER_PATH	=	./shader/
+SPIRV_PATH	=	./spirv/
+
+SHADER_SRC	=	simpleShader.vert \
+				simpleShader.frag \
+				pointLight.vert \
+				pointLight.frag
+
+SPIRV_OBJ	=	${addprefix ${SPIRV_PATH},${addsuffix .spv,${SHADER_SRC}}}
+
 all:${NAME}
 
 clean:
 	${RM} ${OBJ_PATH} .vscode
 
 shaderclean:
-	${RM} ./shader/*.spv
+	${RM} ${SPIRV_PATH}
 
 fclean:clean shaderclean
 	${RM} ${NAME}
@@ -55,19 +65,20 @@ run:re
 	clear
 	./${NAME} 1
 
-shader:shaderclean
-	${GLSLC} ./shader/simpleShader.vert -o ./shader/simpleShader.vert.spv
-	${GLSLC} ./shader/simpleShader.frag -o ./shader/simpleShader.frag.spv
-	${GLSLC} ./shader/pointLight.vert -o ./shader/pointLight.vert.spv
-	${GLSLC} ./shader/pointLight.frag -o ./shader/pointLight.frag.spv
+shader:${SPIRV_OBJ}
+
+${SPIRV_PATH}%.spv:${SHADER_PATH}% ${SPIRV_PATH}
+	${GLSLC} $< -o $@
 
 ${OBJ_PATH}%.o:${SRC_PATH}%.cpp
 	${CPP} ${CPP_FLAGS} ${INC} -c $< -o $@
 
 ${OBJ_DIRS}:
 	mkdir ${OBJ_DIRS} ${OBJ_PATH_VE}
+${SPIRV_PATH}:
+	mkdir ${SPIRV_PATH}
 
-${NAME}:${OBJ_DIRS} ${OBJ} shader
+${NAME}:${OBJ_DIRS} ${OBJ} ${SPIRV_OBJ}
 	${CPP} ${OBJ} ${LIB_FLAGS} ${X11_FLAGS} -o $@
 
 .PHONY:all clean shaderclean fclean re run shader
