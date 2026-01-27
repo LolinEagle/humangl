@@ -35,8 +35,8 @@ void	PointLight::createPipeline(VkRenderPass renderPass){
 
 	_vePipeline = make_unique<VePipeline>(
 		_veDevice,
-		"shader/pointLight.vert.spv",
-		"shader/pointLight.frag.spv",
+		"spirv/pointLight.vert.spv",
+		"spirv/pointLight.frag.spv",
 		pipelineConfig
 	);
 }

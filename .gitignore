@@ -54,3 +54,6 @@ humangl
 .envrc
 compile_commands.json
 
+# build directories
+/obj
+/spirv
