@@ -14,9 +14,9 @@ int		main(int ac, char **av){
 	// Usage
 	if (ac < 2){
 		cout << "Usage: ./humangl <scene> [color] [texture]\n\n" <<
-				"Scene\n1: HumanGL\n2: Scop\n" <<
-				"Color\n1: Color (default)\n2: Gray\n3: White\n\n" <<
-				"Texture\n1: LolinEagle (default)\n2: Stone\n3: Wood" << endl;
+				"Scene :\n1: HumanGL\n2: Scop\n\n" <<
+				"Color :\n1: Color (default)\n2: Gray\n3: White\n\n" <<
+				"Texture :\n1: LolinEagle (default)\n2: Stone\n3: Wood" << endl;
 		return (0);
 	}
 	

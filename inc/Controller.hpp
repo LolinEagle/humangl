@@ -32,11 +32,11 @@ private:
 
 	// Main controle
 	const float	_moveSpeed = 4.f;
-	const float	_lookSpeed = 4.f;
+	const float	_lookSpeed = 6.f;
 	const float	_lookOffset = 2.f;
 	bool		_textureOn = false;
 	bool		_textureOnPress;
-	bool		_mouseEnable = false;
+	bool		_mouseEnable;
 
 	// Jump
 	const float	_jumpSpeed = 16.f;
