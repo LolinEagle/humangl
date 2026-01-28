@@ -50,7 +50,7 @@ private:
 	QueueFamilyIndices		findQueueFamilies(VkPhysicalDevice d);
 	SwapChainSupportDetails	querySwapChainSupport(VkPhysicalDevice d);
 public:
-	const bool 					_enableValidationLayers = true;
+	const bool 					_enableValidationLayers = false;
 	VkPhysicalDeviceProperties	_properties;
 
 	VeDevice(VeWindow &window);
