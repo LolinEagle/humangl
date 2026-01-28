@@ -22,4 +22,6 @@ public:
 	~SkyboxRender();
 
 	void	renderSkybox(FrameInfo &frameInfo, VeGameObject &skybox);
+
+	static VeGameObject createSkyboxObject(VeDevice& device, const std::string &texture_path);
 };

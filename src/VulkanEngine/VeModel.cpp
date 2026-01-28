@@ -347,6 +347,7 @@ void	VeModel::createTextureImages(const int &texture){
 	string			filename;
 	if (texture == 0) filename = "model/texture/LolinEagle.png";
 	else if (texture == 1) filename = "model/texture/Stone.png";
+	else if (texture == 10) filename = "model/texture/panorama_atlas.png";
 	else filename = "model/texture/Wood.png" ;
 	uchar	*pixels = loadImage(
 		filename.c_str(),
