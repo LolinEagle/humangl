@@ -75,7 +75,7 @@ void	MainClass::loadHumanGL(void){
 	loadGameObjects("cube", rightLowerLeg, limbsS, RIGHT_LOWER_LEG);
 
 	// Ground
-	loadGameObjects("cube", ground, groundS);
+	//loadGameObjects("cube", ground, groundS);
 	
 	// Skybox
 	VeGameObject skyboxObj = SkyboxRender::createSkyboxObject(_veDevice, "currently unused");

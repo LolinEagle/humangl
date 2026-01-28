@@ -1,5 +1,6 @@
 #include "VeGameObject.hpp"
 #include "VeModel.hpp"
+#include "vem.hpp"
 #include <SkyboxRender.hpp>
 #include <SimpleRender.hpp>
 #include <memory>
@@ -82,50 +83,64 @@ void	SkyboxRender::renderSkybox(FrameInfo &frameInfo, VeGameObject & skybox){
 	obj._model->draw(frameInfo.commandBuffer);
 }
 
+// corner = 0 (topleft)
+// corner = 1 (bottomleft)
+// corner = 2 (bottomright)
+// corner = 3 (topright)
+static vem::vec2 makeUV(int x, int y, int corner){
+	if (corner == 1) y++;
+	if (corner == 2) {
+		x++;
+		y++;
+	}
+	if (corner == 3) x++;
+
+	return vem::vec2(static_cast<float>(x) / 4.f, static_cast<float>(y) / 4.f);
+}
 
 VeGameObject SkyboxRender::createSkyboxObject(VeDevice& device, const std::string &texture_path)
 {
 	(void)(texture_path);
 	
-	static const vem::vec3 WHITE = {1.f, 1.f, 1.f};
+	static const vem::vec3 WHITE = {1.f, 0.f, 0.f};
 	
 	static const VeModel::Builder skyboxBuilder = {
 		.vertices = {
-			// +X (panorama_0)
-			{{ 1, -1, -1}, WHITE, {-1,  0,  0}, {0.0f/3.0f, 1.0f/2.0f}},
-			{{ 1,  1, -1}, WHITE, {-1,  0,  0}, {0.0f/3.0f, 1.0f}},
-			{{ 1,  1,  1}, WHITE, {-1,  0,  0}, {1.0f/3.0f, 1.0f}},
-			{{ 1, -1,  1}, WHITE, {-1,  0,  0}, {1.0f/3.0f, 1.0f/2.0f}},
+			// RIGHT
+			{{ 1, -1, -1}, WHITE, {-1,  0,  0}, makeUV(0, 1, 3)}, // TR
+			{{ 1,  1, -1}, WHITE, {-1,  0,  0}, makeUV(0, 1, 2)}, // BR
+			{{ 1,  1,  1}, WHITE, {-1,  0,  0}, makeUV(0, 1, 1)}, // BL
+			{{ 1, -1,  1}, WHITE, {-1,  0,  0}, makeUV(0, 1, 0)}, // TL
 
-			// -X (panorama_1)
-			{{-1, -1,  1}, WHITE, { 1,  0,  0}, {1.0f/3.0f, 1.0f/2.0f}},
-			{{-1,  1,  1}, WHITE, { 1,  0,  0}, {1.0f/3.0f, 1.0f}},
-			{{-1,  1, -1}, WHITE, { 1,  0,  0}, {2.0f/3.0f, 1.0f}},
-			{{-1, -1, -1}, WHITE, { 1,  0,  0}, {2.0f/3.0f, 1.0f/2.0f}},
+			// LEFT
+			{{-1, -1,  1}, WHITE, { 1,  0,  0}, makeUV(1, 1, 3)}, // TR
+			{{-1,  1,  1}, WHITE, { 1,  0,  0}, makeUV(1, 1, 2)}, // BR
+			{{-1,  1, -1}, WHITE, { 1,  0,  0}, makeUV(1, 1, 1)}, // BL
+			{{-1, -1, -1}, WHITE, { 1,  0,  0}, makeUV(1, 1, 0)}, // TL
 
-			// +Y (panorama_2)
-			{{-1,  1, -1}, WHITE, { 0, -1,  0}, {2.0f/3.0f, 1.0f/2.0f}},
-			{{-1,  1,  1}, WHITE, { 0, -1,  0}, {2.0f/3.0f, 1.0f}},
-			{{ 1,  1,  1}, WHITE, { 0, -1,  0}, {1.0f,      1.0f}},
-			{{ 1,  1, -1}, WHITE, { 0, -1,  0}, {1.0f,      1.0f/2.0f}},
+			// BOTTOM
+			{{-1,  1, -1}, WHITE, { 0, -1,  0}, makeUV(1, 1, 3)},
+			{{-1,  1,  1}, WHITE, { 0, -1,  0}, makeUV(1, 1, 2)},
+			{{ 1,  1,  1}, WHITE, { 0, -1,  0}, makeUV(1, 1, 1)},
+			{{ 1,  1, -1}, WHITE, { 0, -1,  0}, makeUV(1, 1, 0)},
 
-			// -Y (panorama_3)
-			{{-1, -1,  1}, WHITE, { 0,  1,  0}, {0.0f/3.0f, 1.0f/2.0f}},
-			{{-1, -1, -1}, WHITE, { 0,  1,  0}, {0.0f/3.0f, 0.0f}},
-			{{ 1, -1, -1}, WHITE, { 0,  1,  0}, {1.0f/3.0f, 0.0f}},
-			{{ 1, -1,  1}, WHITE, { 0,  1,  0}, {1.0f/3.0f, 1.0f/2.0f}},
+			// TOP
+			{{-1, -1,  1}, WHITE, { 0,  1,  0}, makeUV(1, 1, 3)},
+			{{-1, -1, -1}, WHITE, { 0,  1,  0}, makeUV(1, 1, 2)},
+			{{ 1, -1, -1}, WHITE, { 0,  1,  0}, makeUV(1, 1, 1)},
+			{{ 1, -1,  1}, WHITE, { 0,  1,  0}, makeUV(1, 1, 0)},
 
-			// +Z (panorama_4)
-			{{ 1, -1,  1}, WHITE, { 0,  0, -1}, {1.0f/3.0f, 1.0f/2.0f}},
-			{{ 1,  1,  1}, WHITE, { 0,  0, -1}, {1.0f/3.0f, 1.0f}},
-			{{-1,  1,  1}, WHITE, { 0,  0, -1}, {2.0f/3.0f, 1.0f}},
-			{{-1, -1,  1}, WHITE, { 0,  0, -1}, {2.0f/3.0f, 1.0f/2.0f}},
+			// FRONT
+			{{ 1, -1,  1}, WHITE, { 0,  0, -1}, makeUV(1, 1, 3)}, // TR
+			{{ 1,  1,  1}, WHITE, { 0,  0, -1}, makeUV(1, 1, 2)}, // BR
+			{{-1,  1,  1}, WHITE, { 0,  0, -1}, makeUV(1, 1, 1)}, // BL
+			{{-1, -1,  1}, WHITE, { 0,  0, -1}, makeUV(1, 1, 0)}, // TL
 
-			// -Z (panorama_5)
-			{{-1, -1, -1}, WHITE, { 0,  0,  1}, {2.0f/3.0f, 1.0f/2.0f}},
-			{{-1,  1, -1}, WHITE, { 0,  0,  1}, {2.0f/3.0f, 1.0f}},
-			{{ 1,  1, -1}, WHITE, { 0,  0,  1}, {1.0f,      1.0f}},
-			{{ 1, -1, -1}, WHITE, { 0,  0,  1}, {1.0f,      1.0f/2.0f}},
+			// BACK
+			{{-1, -1, -1}, WHITE, { 0,  0,  1}, makeUV(1, 1, 3)}, // TR
+			{{-1,  1, -1}, WHITE, { 0,  0,  1}, makeUV(1, 1, 2)}, // BR
+			{{ 1,  1, -1}, WHITE, { 0,  0,  1}, makeUV(1, 1, 1)}, // BL
+			{{ 1, -1, -1}, WHITE, { 0,  0,  1}, makeUV(1, 1, 0)}, // TL
 		},
 
 		.indices = {
