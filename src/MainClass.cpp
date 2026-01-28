@@ -78,7 +78,9 @@ void	MainClass::loadHumanGL(void){
 	loadGameObjects("cube", ground, groundS);
 	
 	// Skybox
-	auto skyboxId = loadGameObjects("cube", {0.f, 0.f, 0.f}, skybox);
+	VeGameObject skyboxObj = SkyboxRender::createSkyboxObject(_veDevice, "currently unused");
+	auto  skyboxId = skyboxObj.getId();
+	_gameObjects.emplace(skyboxId, std::move(skyboxObj));
 	_skybox = &_gameObjects[skyboxId];
 
 }
