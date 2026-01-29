@@ -22,6 +22,7 @@ layout(set = 0, binding = 0) uniform GlobalUbo {
 	PointLight	pointLights[16];
 	int			numLights;
 	int			textureOn;
+	vec2		texUv[32];
 } ubo;
 
 layout(push_constant) uniform Push {

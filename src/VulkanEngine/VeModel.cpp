@@ -18,6 +18,7 @@ Attributes	VeModel::Vertex::getAttributeDescriptions(void){
 	r.push_back({1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, color)});
 	r.push_back({2, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(Vertex, normal)});
 	r.push_back({3, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(Vertex, uv)});
+	r.push_back({4, 0, VK_FORMAT_R32_UINT, offsetof(Vertex, texId)});
 	return (r);
 }
 
@@ -456,7 +457,6 @@ void	VeModel::createVertexBuffers(const vector<Vertex> &vertices){
 	_vertexCount = static_cast<uint>(vertices.size());
 	if (_vertexCount < 3)
 		throw (runtime_error("vertex count must be at least 3"));
-	
 	VkDeviceSize	bufferSize = sizeof(vertices[0]) * _vertexCount;
 	uint			vertexSize = sizeof(vertices[0]);
 	VeBuffer		staging{

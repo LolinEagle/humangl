@@ -39,6 +39,10 @@ private:
 	);
 	void		loadHumanGL(void);
 	void		loadScop(void);
+
+	// this is a function that setups the texture ids for the ubo
+	//      -> this could allow us to change textures at runtime!
+	static void setTextureUvs(GlobalUbo &ubo);
 public:
 	using cV3 = const vem::vec3;
 
