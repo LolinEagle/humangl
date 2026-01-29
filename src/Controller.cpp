@@ -59,7 +59,7 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 
 	// Mouse input
 	glfwGetKey(win, _keys.mouse) ? _mouseEnable = false : _mouseEnable = true;
-	if (_mouseEnable){
+	if (!_mouseEnable){
 		glfwGetCursorPos(win, &newXpos, &newYpos);
 		if (newXpos < 0. || newYpos < 0. || newXpos > WIDTH || newYpos > HEIGHT)
 			return ;
