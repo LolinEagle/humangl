@@ -83,18 +83,21 @@ void	SkyboxRender::renderSkybox(FrameInfo &frameInfo, VeGameObject & skybox){
 	obj._model->draw(frameInfo.commandBuffer);
 }
 
-// corner = 0 (topleft)
-// corner = 1 (bottomleft)
-// corner = 2 (bottomright)
-// corner = 3 (topright)
-static vem::vec2 makeUV(int x, int y, int corner){
-	if (corner == 1) y++;
-	if (corner == 2) {
-		x++;
-		y++;
-	}
-	if (corner == 3) x++;
+#define ALTAS_WIDTH  (2048)
+#define ALTAS_HEIGHT (2048)
+#define CELL_SIZE (512)
 
+#define CELL_RAW(x, y) { \
+	static_cast<float>((x)) / static_cast<float>(ALTAS_WIDTH), \
+	static_cast<float>((y)) / static_cast<float>(ALTAS_HEIGHT) \
+}
+
+#define CELL_TL(x,y) CELL_RAW((x)       * CELL_SIZE + 0, (y)       * CELL_SIZE + 0)
+#define CELL_TR(x,y) CELL_RAW(((x) + 1) * CELL_SIZE - 0, (y)       * CELL_SIZE + 0)
+#define CELL_BL(x,y) CELL_RAW((x)       * CELL_SIZE + 0, ((y) + 1) * CELL_SIZE - 0)
+#define CELL_BR(x,y) CELL_RAW(((x) + 1) * CELL_SIZE - 0, ((y) + 1) * CELL_SIZE - 0)
+
+static vem::vec2 makeUV(int x, int y){
 	return vem::vec2(static_cast<float>(x) / 4.f, static_cast<float>(y) / 4.f);
 }
 
@@ -107,40 +110,40 @@ VeGameObject SkyboxRender::createSkyboxObject(VeDevice& device, const std::strin
 	static const VeModel::Builder skyboxBuilder = {
 		.vertices = {
 			// RIGHT
-			{{ 1, -1, -1}, WHITE, {-1,  0,  0}, makeUV(0, 1, 3)}, // TR
-			{{ 1,  1, -1}, WHITE, {-1,  0,  0}, makeUV(0, 1, 2)}, // BR
-			{{ 1,  1,  1}, WHITE, {-1,  0,  0}, makeUV(0, 1, 1)}, // BL
-			{{ 1, -1,  1}, WHITE, {-1,  0,  0}, makeUV(0, 1, 0)}, // TL
+			{{ 1, -1, -1}, WHITE, {-1,  0,  0}, CELL_TR(2, 1)}, // TR
+			{{ 1,  1, -1}, WHITE, {-1,  0,  0}, CELL_BR(2, 1)}, // BR
+			{{ 1,  1,  1}, WHITE, {-1,  0,  0}, CELL_BL(2, 1)}, // BL
+			{{ 1, -1,  1}, WHITE, {-1,  0,  0}, CELL_TL(2, 1)}, // TL
 
 			// LEFT
-			{{-1, -1,  1}, WHITE, { 1,  0,  0}, makeUV(1, 1, 3)}, // TR
-			{{-1,  1,  1}, WHITE, { 1,  0,  0}, makeUV(1, 1, 2)}, // BR
-			{{-1,  1, -1}, WHITE, { 1,  0,  0}, makeUV(1, 1, 1)}, // BL
-			{{-1, -1, -1}, WHITE, { 1,  0,  0}, makeUV(1, 1, 0)}, // TL
+			{{-1, -1,  1}, WHITE, { 1,  0,  0}, CELL_TR(0, 1)}, // TR
+			{{-1,  1,  1}, WHITE, { 1,  0,  0}, CELL_BR(0, 1)}, // BR
+			{{-1,  1, -1}, WHITE, { 1,  0,  0}, CELL_BL(0, 1)}, // BL
+			{{-1, -1, -1}, WHITE, { 1,  0,  0}, CELL_TL(0, 1)}, // TL
 
 			// BOTTOM
-			{{-1,  1, -1}, WHITE, { 0, -1,  0}, makeUV(1, 1, 3)},
-			{{-1,  1,  1}, WHITE, { 0, -1,  0}, makeUV(1, 1, 2)},
-			{{ 1,  1,  1}, WHITE, { 0, -1,  0}, makeUV(1, 1, 1)},
-			{{ 1,  1, -1}, WHITE, { 0, -1,  0}, makeUV(1, 1, 0)},
+			{{-1,  1, -1}, WHITE, { 0, -1,  0}, CELL_BL(1, 2)},
+			{{-1,  1,  1}, WHITE, { 0, -1,  0}, CELL_TL(1, 2)},
+			{{ 1,  1,  1}, WHITE, { 0, -1,  0}, CELL_TR(1, 2)},
+			{{ 1,  1, -1}, WHITE, { 0, -1,  0}, CELL_BR(1, 2)},
 
-			// TOP
-			{{-1, -1,  1}, WHITE, { 0,  1,  0}, makeUV(1, 1, 3)},
-			{{-1, -1, -1}, WHITE, { 0,  1,  0}, makeUV(1, 1, 2)},
-			{{ 1, -1, -1}, WHITE, { 0,  1,  0}, makeUV(1, 1, 1)},
-			{{ 1, -1,  1}, WHITE, { 0,  1,  0}, makeUV(1, 1, 0)},
+			// TOP (flip Bottom -> top and Left -> rights)
+			{{-1, -1,  1}, WHITE, { 0,  1,  0}, CELL_BL(1, 0)}, // TR
+			{{-1, -1, -1}, WHITE, { 0,  1,  0}, CELL_TL(1, 0)}, // BR
+			{{ 1, -1, -1}, WHITE, { 0,  1,  0}, CELL_TR(1, 0)}, // BL
+			{{ 1, -1,  1}, WHITE, { 0,  1,  0}, CELL_BR(1, 0)}, // TL
 
 			// FRONT
-			{{ 1, -1,  1}, WHITE, { 0,  0, -1}, makeUV(1, 1, 3)}, // TR
-			{{ 1,  1,  1}, WHITE, { 0,  0, -1}, makeUV(1, 1, 2)}, // BR
-			{{-1,  1,  1}, WHITE, { 0,  0, -1}, makeUV(1, 1, 1)}, // BL
-			{{-1, -1,  1}, WHITE, { 0,  0, -1}, makeUV(1, 1, 0)}, // TL
+			{{ 1, -1,  1}, WHITE, { 0,  0, -1}, CELL_TR(1, 1)}, // TR
+			{{ 1,  1,  1}, WHITE, { 0,  0, -1}, CELL_BR(1, 1)}, // BR
+			{{-1,  1,  1}, WHITE, { 0,  0, -1}, CELL_BL(1, 1)}, // BL
+			{{-1, -1,  1}, WHITE, { 0,  0, -1}, CELL_TL(1, 1)}, // TL
 
 			// BACK
-			{{-1, -1, -1}, WHITE, { 0,  0,  1}, makeUV(1, 1, 3)}, // TR
-			{{-1,  1, -1}, WHITE, { 0,  0,  1}, makeUV(1, 1, 2)}, // BR
-			{{ 1,  1, -1}, WHITE, { 0,  0,  1}, makeUV(1, 1, 1)}, // BL
-			{{ 1, -1, -1}, WHITE, { 0,  0,  1}, makeUV(1, 1, 0)}, // TL
+			{{-1, -1, -1}, WHITE, { 0,  0,  1}, CELL_TR(3, 1)}, // TR
+			{{-1,  1, -1}, WHITE, { 0,  0,  1}, CELL_BR(3, 1)}, // BR
+			{{ 1,  1, -1}, WHITE, { 0,  0,  1}, CELL_BL(3, 1)}, // BL
+			{{ 1, -1, -1}, WHITE, { 0,  0,  1}, CELL_TL(3, 1)}, // TL
 		},
 
 		.indices = {
