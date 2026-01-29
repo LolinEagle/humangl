@@ -13,6 +13,8 @@ public:
 	struct Vertex{
 		vem::vec3	position, color, normal;
 		vem::vec2	uv;
+		// Id of the texture
+		uint		texId = 0;
 
 		static Bindings		getBindingDescriptions(void);
 		static Attributes	getAttributeDescriptions(void);

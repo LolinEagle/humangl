@@ -75,8 +75,10 @@ void	MainClass::loadHumanGL(void){
 	loadGameObjects("cube", rightLowerLeg, limbsS, RIGHT_LOWER_LEG);
 
 	// Ground
-	//loadGameObjects("cube", ground, groundS);
-	
+	auto groundId = loadGameObjects("cube", ground, groundS);
+	// rotate the ground so it is on the same orientation as the camera
+	_gameObjects[groundId]._transform.rotation = {0, -3.14f / 2.f, 0};
+
 	// Skybox
 	VeGameObject skyboxObj = SkyboxRender::createSkyboxObject(_veDevice, "currently unused");
 	auto  skyboxId = skyboxObj.getId();
@@ -105,6 +107,11 @@ MainClass::MainClass(int scene, int color, int texture)
 }
 
 MainClass::~MainClass(){
+}
+
+void MainClass::setTextureUvs(GlobalUbo &ubo)
+{
+
 }
 
 void	MainClass::run(void){
@@ -215,6 +222,7 @@ void	MainClass::run(void){
 			pointLightSystem.update(frameInfo, ubo);
 			uboBuffers[frameIndex]->writeToBuffer(&ubo);
 			uboBuffers[frameIndex]->flush();
+			GlobalUbo::setTextureUvs(ubo);
 
 			// Render
 			_veRenderer.beginSwapChainRenderPass(commandBuffer);

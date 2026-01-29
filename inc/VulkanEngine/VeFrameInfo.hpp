@@ -16,6 +16,7 @@ struct GlobalUbo{
 	PointLightEntity	pointLights[MAX_LIGHTS];
 	int					numLights;
 	int					textureOn;
+	vem::vec2			texUv[32] = {};
 };
 
 struct FrameInfo{
