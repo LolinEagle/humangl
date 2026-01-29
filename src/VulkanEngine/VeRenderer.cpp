@@ -37,7 +37,7 @@ void	VeRenderer::recreateSwapChain(void){
 		_veSwapChain = make_unique<VeSwapChain>(_veDevice, extent);
 		return ;
 	}
-	shared_ptr<VeSwapChain>	oldSwapChain = move(_veSwapChain);
+	shared_ptr<VeSwapChain>	oldSwapChain = std::move(_veSwapChain);
 	_veSwapChain = make_unique<VeSwapChain>(_veDevice, extent, oldSwapChain);
 	if (!oldSwapChain->compareSwapFormate(*_veSwapChain.get()))
 		throw (runtime_error("swap chain image (or depth) format has changed"));
