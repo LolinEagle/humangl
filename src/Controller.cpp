@@ -146,7 +146,7 @@ void	Controller::moveInPlaneXZ(GLFWwindow *win, float dt, VeGameObject &go){
 		// Move torso, head and hat
 		auto	&torsoZ = _model[TORSO]->_transform.offset.z;
 
-		torsoZ -= _walkSpeed * dt;
+		torsoZ += _walkSpeed * dt;
 		for (int i = HEAD; i <= HAT; i++)
 			_model[i]->_transform.offset.z = torsoZ;
 

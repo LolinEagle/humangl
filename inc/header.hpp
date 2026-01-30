@@ -90,6 +90,8 @@ enum TexIdRaw {
 	TEX_LEFT_LOWER_LEG,
 	TEX_RIGHT_UPPER_LEG,
 	TEX_RIGHT_LOWER_LEG,
+	TEX_HAT_BASE,
+	TEX_HAT_RIM,
 
 	// used to assert that we never got out of bounds :D
 	_TEX_LAST,

@@ -2,29 +2,15 @@
 
 const float SHININESS				= 512.0;
 
-const uint  TMAP_NONE				= 0;
-const uint  TMAP_FLIP_HORIZONTAL	= 1 << 0;
-const uint  TMAP_FLIP_VERTICAL		= 1 << 1;
-const uint  TMAP_ROT_90				= 1 << 2;
-const uint  TMAP_ROT_180			= 1 << 3;
-const uint  TMAP_ROT_270			= 1 << 4;
-
 struct PointLight {
 	vec4	position;
 	vec4	color;
-};
-
-struct TexIdMapping {
-	vec2	tl;
-	vec2	br;
-	//uint	flags;
 };
 
 layout(location = 0) in vec3 fragColor;
 layout(location = 1) in vec3 fragPosWorld;
 layout(location = 2) in vec3 fragNormalWorld;
 layout(location = 3) in vec2 fragUv;
-layout(location = 4) in flat uint texId;
 layout(location = 0) out vec4 outColor;
 
 layout(set = 0, binding = 0) uniform GlobalUbo {
@@ -44,9 +30,6 @@ layout(push_constant) uniform Push {
 	mat4	normalMatrix;
 } push;
 
-layout(set = 0, binding = 2) uniform TexIdMap {
-	TexIdMapping texUv[128];
-} texIdMap;
 
 
 void	main(void){
@@ -90,14 +73,8 @@ void	main(void){
 		blinnTerm = pow(blinnTerm, SHININESS);
 		specularLight += intensity * blinnTerm;
 	}
-	if (ubo.textureOn > 0) {// Is true
-		// here do the flipping, rotating and all;
-
-		//TexIdMapping mapping = ubo.texUv[texId];
-		//vec2 uvSpace = mapping.bottomRightUv - mapping.topLeftUv;
-		//vec2 mappedUv = fragUv * uvSpace + mapping.topLeftUv;
+	if (ubo.textureOn > 0)
 		outColor = texture(texSampler, fragUv);
-	}
 	else
 		outColor = vec4((diffuseLight + specularLight + 0.5) * fragColor, 1.0);
 }

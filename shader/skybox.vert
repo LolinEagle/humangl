@@ -9,7 +9,6 @@ layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec3 fragPosWorld;
 layout(location = 2) out vec3 fragNormalWorld;
 layout(location = 3) out vec2 fragUv;
-layout(location = 4) out uint fragTexId;
 
 struct PointLight {
 	vec4	position;
@@ -18,8 +17,15 @@ struct PointLight {
 struct TexIdMapping {
 	vec2	tl;
 	vec2	br;
-//	uint	flags;
+	uint	flags;
 };
+
+const uint  TMAP_NONE				= 0;
+const uint  TMAP_FLIP_HORIZONTAL	= 1 << 0;
+const uint  TMAP_FLIP_VERTICAL		= 1 << 1;
+const uint  TMAP_ROT_90				= 1 << 2;
+const uint  TMAP_ROT_180			= 1 << 3;
+const uint  TMAP_ROT_270			= 1 << 4;
 
 layout(set = 0, binding = 0) uniform GlobalUbo {
 	mat4		projection;
@@ -40,9 +46,23 @@ layout(set = 0, binding = 2) uniform TexIdMap {
 	TexIdMapping texUv[128];
 } texIdMap;
 
+
+vec2 applyTransform(vec2 uv, uint flags)
+{
+	// Rotations
+	if ((flags & TMAP_ROT_90) != 0u)		uv = vec2(1-uv.y,   uv.x);
+	else if ((flags & TMAP_ROT_180) != 0u)	uv = vec2(1-uv.x, 1-uv.y);
+	else if ((flags & TMAP_ROT_270) != 0u)	uv = vec2(  uv.y, 1-uv.x);
+	// Flips
+	if ((flags & TMAP_FLIP_HORIZONTAL) != 0u)	uv.x = 1-uv.x;
+	if ((flags & TMAP_FLIP_VERTICAL) != 0u)		uv.y = 1-uv.y;
+
+	return uv;
+}
+
 void	main(void){
-	fragUv = uv;
-	fragTexId = texId;
+	TexIdMapping map = texIdMap.texUv[texId];
+	fragUv = mix(map.tl, map.br, applyTransform(uv, map.flags));
 	// trim the last column (?) of the matrix -> removed rotation data
 	mat4 viewNoRot = mat4(mat3(ubo.view));
 
