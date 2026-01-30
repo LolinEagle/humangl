@@ -1,9 +1,12 @@
 #include "SkyboxRender.hpp"
+#include "TexIdUv.hpp"
 #include "header.hpp"
 #include <MainClass.hpp>
 
 using namespace std;
 using seconds_float = chrono::duration<float, chrono::seconds::period>;
+
+static const TexUvMapping idMap{};
 
 // why << 3 ? look a tht comment on the textureIdRaw
 //static_assert(MAX_TEX_ID >= (_TEX_LAST << 3), "The textureId buffer is too small");
@@ -85,8 +88,8 @@ void	MainClass::loadHumanGL(void){
 	// Body part
 	loadCubeObject(torso,         torsoS,           TEX_TORSO,  TORSO         );
 	loadCubeObject(head,          headS,             TEX_HEAD,  HEAD          );
-	loadCubeObject(hatBase,       hatBaseS,          TEX_NONE,  HAT_BASE      );
-	loadCubeObject(hat,           hatS,              TEX_NONE,  HAT           );
+	loadCubeObject(hatBase,       hatBaseS,      TEX_HAT_BASE,  HAT_BASE      );
+	loadCubeObject(hat,           hatS,           TEX_HAT_RIM,  HAT           );
 	loadCubeObject(leftUpperArm,  limbsS,  TEX_LEFT_UPPER_ARM,  LEFT_UPPER_ARM);
 	loadCubeObject(leftLowerArm,  limbsS,  TEX_LEFT_LOWER_ARM,  LEFT_LOWER_ARM);
 	loadCubeObject(rightUpperArm, limbsS, TEX_RIGHT_UPPER_ARM, RIGHT_UPPER_ARM);
@@ -99,11 +102,12 @@ void	MainClass::loadHumanGL(void){
 	// Ground
 	auto groundId = loadCubeObject(ground, groundS, TEX_GROUND);
 	// rotate the ground so it is on the same orientation as the camera
+	_gameObjects[groundId]._transform.rotation = {0, M_PI, 0};
 
 	// Skybox
-	auto skyboxId = loadCubeObject({0.f}, {128.f}, TEX_SKYBOX);
+	auto skyboxId = loadCubeObject({0.f}, {100.f}, TEX_SKYBOX);
 	_skybox = &_gameObjects[skyboxId];
-	_skybox->_transform.rotation = {0, -3.14f / 2.f, 0};
+	_skybox->_transform.rotation = {0, M_PI, 0};
 }
 
 void	MainClass::loadScop(void){
@@ -117,9 +121,9 @@ void	MainClass::loadScop(void){
 MainClass::MainClass(int scene, int color, int texture)
 : _color(color), _texture(texture){
 	_globalPool = VeDescriptorPool::Builder(_veDevice)
-		.setMaxSets(MAX_FRAMES * 2)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES) // ubo
-		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES) // texIdMap
+		.setMaxSets(MAX_FRAMES * 2 + 1)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES)
 		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES)
 		.build();
 	if (scene == HUMANGL) loadHumanGL();
@@ -129,21 +133,43 @@ MainClass::MainClass(int scene, int color, int texture)
 MainClass::~MainClass(){
 }
 
-void MainClass::setTextureUvs(TexIdData &ubo)
+#define COPY_TEX(storage, texId, texName)  do {\
+		storage.texUv[TEXID(texId, Front)] =  idMap.texName##Front; \
+		storage.texUv[TEXID(texId, Top)] =    idMap.texName##Top; \
+		storage.texUv[TEXID(texId, Bottom)] = idMap.texName##Bottom; \
+		storage.texUv[TEXID(texId, Left)] =   idMap.texName##Left; \
+		storage.texUv[TEXID(texId, Right)] =  idMap.texName##Right; \
+		storage.texUv[TEXID(texId, Back)] =   idMap.texName##Back; \
+	} while (0);
+
+void MainClass::setTextureUvs(TexIdData &texIdBuf)
 {
-	for (auto &uv : ubo.texUv)
+	for (auto &uv : texIdBuf.texUv)
 		uv = {{0.f, 0.f}, {1.f, 1.f}   };
-	ubo.texUv[TEXID(TEX_SKYBOX, Front)] =    {{0.25f, 0.25f}, {0.5f , 0.5f }};
-	ubo.texUv[TEXID(TEX_SKYBOX, Top)] =      {{0.25f, 0.f  }, {0.5f , 0.25f}};
-	ubo.texUv[TEXID(TEX_SKYBOX, Bottom)] =   {{0.25f, 0.5f }, {0.5f , 0.25f}};
-	ubo.texUv[TEXID(TEX_SKYBOX, Left)] =    {{0.25f, 0.25f}, {0.5f , 0.5f }};
-	ubo.texUv[TEXID(TEX_SKYBOX, Right)] =    {{0.25f, 0.25f}, {0.5f , 0.5f }};
-	ubo.texUv[TEXID(TEX_SKYBOX, Back)] =    {{0.25f, 0.25f}, {0.5f , 0.5f }};
+	COPY_TEX(texIdBuf, TEX_SKYBOX, skybox);
+	COPY_TEX(texIdBuf, TEX_HEAD,   mcHead);
+	COPY_TEX(texIdBuf, TEX_TORSO,  mcTorso);
+	
+	COPY_TEX(texIdBuf, TEX_LEFT_UPPER_ARM,  mcLeftArmUpper);
+	COPY_TEX(texIdBuf, TEX_LEFT_UPPER_LEG,  mcLeftLegUpper);
+	COPY_TEX(texIdBuf, TEX_LEFT_LOWER_ARM,  mcLeftArmLower);
+	COPY_TEX(texIdBuf, TEX_LEFT_LOWER_LEG,  mcLeftLegLower);
+	
+	COPY_TEX(texIdBuf, TEX_RIGHT_UPPER_ARM,  mcRightArmUpper);
+	COPY_TEX(texIdBuf, TEX_RIGHT_UPPER_LEG,  mcRightLegUpper);
+	COPY_TEX(texIdBuf, TEX_RIGHT_LOWER_ARM,  mcRightArmLower);
+	COPY_TEX(texIdBuf, TEX_RIGHT_LOWER_LEG,  mcRightLegLower);
+
+	for (uint i = 0; i < 8; i++) {
+		texIdBuf.texUv[TEXID(TEX_GROUND, i)]  = idMap.lolin;
+		texIdBuf.texUv[TEXID(TEX_HAT_BASE, i)] = idMap.maix;
+		texIdBuf.texUv[TEXID(TEX_HAT_RIM, i)]  = idMap.wood;
+	}
 }
 
 void	MainClass::run(void){
 	vector<unique_ptr<VeBuffer>>	uboBuffers(MAX_FRAMES);
-	vector<unique_ptr<VeBuffer>>	texIdBuffers(MAX_FRAMES);
+	unique_ptr<VeBuffer>			texIdBuffer;
 	for (int i = 0; i < uboBuffers.size(); i++){
 		uboBuffers[i] = make_unique<VeBuffer>(
 			_veDevice,
@@ -155,8 +181,8 @@ void	MainClass::run(void){
 		);
 		uboBuffers[i]->map();
 	}
-	for (int i = 0; i < texIdBuffers.size(); i++){
-		texIdBuffers[i] = make_unique<VeBuffer>(
+	
+	texIdBuffer = make_unique<VeBuffer>(
 			_veDevice,
 			sizeof(TexIdData),
 			1,
@@ -164,8 +190,7 @@ void	MainClass::run(void){
 			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
 			_veDevice._properties.limits.minUniformBufferOffsetAlignment
 		);
-		texIdBuffers[i]->map();
-	}
+	texIdBuffer->map();
 
 
 	auto	globalSetLayout = VeDescriptorSetLayout::Builder(_veDevice)
@@ -179,7 +204,7 @@ void	MainClass::run(void){
 	vector<VkDescriptorSet>	globalDescriptorSets(MAX_FRAMES);
 	for (int i = 0; i < globalDescriptorSets.size(); i++){
 		VkDescriptorBufferInfo	buffer = uboBuffers[i]->descriptorBufferInfo();
-		VkDescriptorBufferInfo	texIdBuffer = texIdBuffers[i]->descriptorBufferInfo();
+		VkDescriptorBufferInfo	texIdBufferDesc = texIdBuffer->descriptorBufferInfo();
 		VkDescriptorImageInfo	image;
 		for (const auto &[id, gameObject] : _gameObjects){
 			if (gameObject._model){
@@ -190,7 +215,7 @@ void	MainClass::run(void){
 		VeDescriptorWriter(*globalSetLayout, *_globalPool)
 			.writeBuffer(0, &buffer)
 			.writeImage(1, &image)
-			.writeBuffer(2, &texIdBuffer)
+			.writeBuffer(2, &texIdBufferDesc)
 			.build(globalDescriptorSets[i]);
 	}
 
@@ -228,6 +253,10 @@ void	MainClass::run(void){
 	
 	if (_skybox != nullptr)
 		simpleRenderSystem.addIgnoredObject(_skybox->getId());
+	TexIdData texIdData{};
+	MainClass::setTextureUvs(texIdData);
+	texIdBuffer->writeToBuffer(&texIdData);
+	texIdBuffer->flush();
 
 	while (!_veWindow.shouldClose()){
 		glfwPollEvents();
@@ -267,15 +296,11 @@ void	MainClass::run(void){
 			uboBuffers[frameIndex]->writeToBuffer(&ubo);
 			uboBuffers[frameIndex]->flush();
 
-			TexIdData texIdData{};
-			MainClass::setTextureUvs(texIdData);
-			texIdBuffers[frameIndex]->writeToBuffer(&texIdData);
-			texIdBuffers[frameIndex]->flush();
 
 			// Render
 			_veRenderer.beginSwapChainRenderPass(commandBuffer);
-			//simpleRenderSystem.renderObjects(frameInfo);
-			//pointLightSystem.render(frameInfo);
+			simpleRenderSystem.renderObjects(frameInfo);
+			pointLightSystem.render(frameInfo);
 			if (_skybox != nullptr)
 				skyboxRenderSystem.renderSkybox(frameInfo, *_skybox);
 			_veRenderer.endSwapChainRenderPass(commandBuffer);

@@ -23,10 +23,11 @@ enum TexIdMappingTransform{
 
 // this represent a single texture -> mapped from a id to an actual texture
 // it is to be used with a texture atlas
-struct TexIdMapping{
+struct TexIdMapping {
 	vem::vec2				topLeftUv		= {0.f, 0.f};
 	vem::vec2				bottomLeftUv	= {1.f, 1.f};
-	//uint					transform		= TMAP_NONE;
+	uint					transform		= TMAP_NONE;
+	uint					_padding[3]		= {0, 0, 0};
 };
 
 struct GlobalUbo{

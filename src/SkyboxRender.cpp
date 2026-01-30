@@ -3,7 +3,6 @@
 #include "vem.hpp"
 #include <SkyboxRender.hpp>
 #include <SimpleRender.hpp>
-#include <memory>
 
 void	SkyboxRender::createPipelineLayout(DSLayout gSetLayout){
 	VkPushConstantRange	pushConstantRange{};
@@ -32,6 +31,7 @@ void	SkyboxRender::createPipeline(VkRenderPass renderPass){
 	VePipeline::defaultPipelineConfigInfo(pipelineConfig);
 	pipelineConfig.renderPass = renderPass;
 	pipelineConfig.pipelineLayout = _pipelineLayout;
+	pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
 
 	_vePipeline = make_unique<VePipeline>(
 		_veDevice,

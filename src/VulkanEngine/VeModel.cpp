@@ -346,6 +346,7 @@ uchar	*loadImage(const char *filename, int *x, int *y, int *comp, int req){
 void	VeModel::createTextureImages(){
 	int				texWidth, texHeight, texChannels;
 	string			filename;
+	//filename = "model/texture/panorama_atlas.png";
 	filename = "model/texture/panorama_atlas_minecraft.png";
 	uchar	*pixels = loadImage(
 		filename.c_str(),
@@ -428,8 +429,8 @@ void	VeModel::createTextureImageView(void){
 void	VeModel::createTextureSampler(void){
 	VkSamplerCreateInfo	samplerInfo{};
 	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-	samplerInfo.magFilter = VK_FILTER_LINEAR;
-	samplerInfo.minFilter = VK_FILTER_LINEAR;
+	samplerInfo.magFilter = VK_FILTER_NEAREST; // VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_NEAREST; // VK_FILTER_LINEAR;
 	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
@@ -521,43 +522,50 @@ unique_ptr<VeModel>	VeModel::createModelFromFile(
 //#define TEXID(raw, face) 9
 unique_ptr<VeModel> VeModel::createCubeModel(VeDevice &device, const TexIdRaw t)
 {
+	const vem::vec2 UV[4] = {
+		{0.f, 0.f}, // TR
+		{0.f, 1.f}, // BR
+		{1.f, 1.f}, // BL
+		{1.f, 0.f}, // TL
+	};
+
 	const VeModel::Builder cube_data = {
 		.vertices = {
 			// FRONT
-			{{ 1, -1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, {1.f, 0.f}, TEXID(t, Front)}, // TR
-			{{ 1,  1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, {1.f, 1.f}, TEXID(t, Front)}, // BR
-			{{-1,  1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, {0.f, 1.f}, TEXID(t, Front)}, // BL
-			{{-1, -1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, {0.f, 0.f}, TEXID(t, Front)}, // TL
+			{{ 1, -1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, UV[0], TEXID(t, Front)}, // TR
+			{{ 1,  1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, UV[1], TEXID(t, Front)}, // BR
+			{{-1,  1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, UV[2], TEXID(t, Front)}, // BL
+			{{-1, -1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, UV[3], TEXID(t, Front)}, // TL
 
 			// BACK
-			{{-1, -1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, {1.f, 0.f}, TEXID(t, Back)}, // TR
-			{{-1,  1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, {1.f, 1.f}, TEXID(t, Back)}, // BR
-			{{ 1,  1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, {0.f, 1.f}, TEXID(t, Back)}, // BL
-			{{ 1, -1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, {0.f, 0.f}, TEXID(t, Back)}, // TL
+			{{-1, -1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, UV[0], TEXID(t, Back)}, // TR
+			{{-1,  1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, UV[1], TEXID(t, Back)}, // BR
+			{{ 1,  1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, UV[2], TEXID(t, Back)}, // BL
+			{{ 1, -1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, UV[3], TEXID(t, Back)}, // TL
 
 			// LEFT
-			{{-1, -1,  1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, {1.f, 0.f}, TEXID(t, Left)}, // TR
-			{{-1,  1,  1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, {1.f, 1.f}, TEXID(t, Left)}, // BR
-			{{-1,  1, -1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, {0.f, 1.f}, TEXID(t, Left)}, // BL
-			{{-1, -1, -1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, {0.f, 0.f}, TEXID(t, Left)}, // TL
+			{{-1, -1,  1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, UV[0], TEXID(t, Left)}, // TR
+			{{-1,  1,  1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, UV[1], TEXID(t, Left)}, // BR
+			{{-1,  1, -1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, UV[2], TEXID(t, Left)}, // BL
+			{{-1, -1, -1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, UV[3], TEXID(t, Left)}, // TL
 			
 			// RIGHT
-			{{ 1, -1, -1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, {1.f, 0.f}, TEXID(t, Right)}, // TR
-			{{ 1,  1, -1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, {1.f, 1.f}, TEXID(t, Right)}, // BR
-			{{ 1,  1,  1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, {0.f, 1.f}, TEXID(t, Right)}, // BL
-			{{ 1, -1,  1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, {0.f, 0.f}, TEXID(t, Right)}, // TL
+			{{ 1, -1, -1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, UV[0], TEXID(t, Right)}, // TR
+			{{ 1,  1, -1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, UV[1], TEXID(t, Right)}, // BR
+			{{ 1,  1,  1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, UV[2], TEXID(t, Right)}, // BL
+			{{ 1, -1,  1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, UV[3], TEXID(t, Right)}, // TL
 			
 			// TOP
-			{{-1, -1,  1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, {1.f, 0.f}, TEXID(t, Top)}, // TR
-			{{-1, -1, -1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, {1.f, 1.f}, TEXID(t, Top)}, // BR
-			{{ 1, -1, -1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, {0.f, 1.f}, TEXID(t, Top)}, // BL
-			{{ 1, -1,  1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, {0.f, 0.f}, TEXID(t, Top)}, // TL
+			{{-1, -1,  1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, UV[0], TEXID(t, Top)}, // TR
+			{{-1, -1, -1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, UV[1], TEXID(t, Top)}, // BR
+			{{ 1, -1, -1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, UV[2], TEXID(t, Top)}, // BL
+			{{ 1, -1,  1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, UV[3], TEXID(t, Top)}, // TL
 			
 			// BOTTOM
-			{{-1,  1, -1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, {1.f, 0.f}, TEXID(t, Bottom)},
-			{{-1,  1,  1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, {1.f, 1.f}, TEXID(t, Bottom)},
-			{{ 1,  1,  1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, {0.f, 1.f}, TEXID(t, Bottom)},
-			{{ 1,  1, -1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, {0.f, 0.f}, TEXID(t, Bottom)},
+			{{-1,  1, -1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, UV[0], TEXID(t, Bottom)},
+			{{-1,  1,  1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, UV[1], TEXID(t, Bottom)},
+			{{ 1,  1,  1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, UV[2], TEXID(t, Bottom)},
+			{{ 1,  1, -1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, UV[3], TEXID(t, Bottom)},
 		},
 
 		.indices = {
