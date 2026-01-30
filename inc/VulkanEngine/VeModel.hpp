@@ -55,7 +55,7 @@ private:
 		VkImage &image,
 		VkDeviceMemory &imageMemory
 	);
-	void	createTextureImages(const int &texture);
+	void	createTextureImages();
 	void	createTextureImageView(void);
 	void	createTextureSampler(void);
 	void	createVertexBuffers(const vector<Vertex> &vertices);
@@ -72,4 +72,6 @@ public:
 	void	bind(VkCommandBuffer cb);
 	void	draw(VkCommandBuffer cb);
 	VkDescriptorImageInfo	descriptorImageInfo(void);
+
+	static unique_ptr<VeModel>	createCubeModel(VeDevice &device, const TexIdRaw texId);
 };

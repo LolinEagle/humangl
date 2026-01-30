@@ -1,14 +1,18 @@
 #include "SkyboxRender.hpp"
+#include "header.hpp"
 #include <MainClass.hpp>
 
 using namespace std;
 using seconds_float = chrono::duration<float, chrono::seconds::period>;
 
+// why << 3 ? look a tht comment on the textureIdRaw
+//static_assert(MAX_TEX_ID >= (_TEX_LAST << 3), "The textureId buffer is too small");
+
 const uint	MainClass::loadGameObjects(
 	const string &filepath,
 	vem::vec3 translation,
 	vem::vec3 scale,
-	int bodyPart = -1
+	int bodyPart
 ){
 	shared_ptr<VeModel>	veModel = VeModel::createModelFromFile(
 		_veDevice, "model/" + filepath + ".obj", _color, _texture
@@ -22,6 +26,25 @@ const uint	MainClass::loadGameObjects(
 	if (bodyPart != -1)
 		_model.emplace(bodyPart, &_gameObjects[gameObject.getId()]);
 	return gameObject.getId();
+}
+
+const uint MainClass::loadCubeObject(
+	vem::vec3 translation,
+	vem::vec3 scale,
+	TexIdRaw texId,
+	int bodyPart
+){
+	shared_ptr<VeModel>	veModel = VeModel::createCubeModel(_veDevice, texId);
+	auto	gameObject = VeGameObject::createGameObject();
+
+	gameObject._model = veModel;
+	gameObject._transform.translation = translation;
+	gameObject._transform.scale = scale;
+	_gameObjects.emplace(gameObject.getId(), std::move(gameObject));
+	if (bodyPart != -1)
+		_model.emplace(bodyPart, &_gameObjects[gameObject.getId()]);
+	return gameObject.getId();
+
 }
 
 vem::vec3	makeT(
@@ -43,7 +66,6 @@ void	MainClass::loadHumanGL(void){
 	cV3	hatS{2.f, .5f, 2.f};
 	cV3	limbsS{1.f, 1.5f, 1.f};
 	cV3	groundS{32.f, .1f, 32.f};
-	cV3	skybox{128.f, 128.f, 128.f};
 
 	// Translation
 	cV3	torso{0.f, -7.5f, 0.f};
@@ -61,30 +83,27 @@ void	MainClass::loadHumanGL(void){
 	cV3	ground = makeT(torso, -torsoS.y - groundS.y, -limbsS.y * 4.f);
 
 	// Body part
-	loadGameObjects("cube", torso, torsoS, TORSO);
-	loadGameObjects("cube", head, headS, HEAD);
-	loadGameObjects("cube", hatBase, hatBaseS, HAT_BASE);
-	loadGameObjects("cube", hat, hatS, HAT);
-	loadGameObjects("cube", leftUpperArm, limbsS, LEFT_UPPER_ARM);
-	loadGameObjects("cube", leftLowerArm, limbsS, LEFT_LOWER_ARM);
-	loadGameObjects("cube", rightUpperArm, limbsS, RIGHT_UPPER_ARM);
-	loadGameObjects("cube", rightLowerArm, limbsS, RIGHT_LOWER_ARM);
-	loadGameObjects("cube", leftUpperLeg, limbsS, LEFT_UPPER_LEG);
-	loadGameObjects("cube", leftLowerLeg, limbsS, LEFT_LOWER_LEG);
-	loadGameObjects("cube", rightUpperLeg, limbsS, RIGHT_UPPER_LEG);
-	loadGameObjects("cube", rightLowerLeg, limbsS, RIGHT_LOWER_LEG);
+	loadCubeObject(torso,         torsoS,           TEX_TORSO,  TORSO         );
+	loadCubeObject(head,          headS,             TEX_HEAD,  HEAD          );
+	loadCubeObject(hatBase,       hatBaseS,          TEX_NONE,  HAT_BASE      );
+	loadCubeObject(hat,           hatS,              TEX_NONE,  HAT           );
+	loadCubeObject(leftUpperArm,  limbsS,  TEX_LEFT_UPPER_ARM,  LEFT_UPPER_ARM);
+	loadCubeObject(leftLowerArm,  limbsS,  TEX_LEFT_LOWER_ARM,  LEFT_LOWER_ARM);
+	loadCubeObject(rightUpperArm, limbsS, TEX_RIGHT_UPPER_ARM, RIGHT_UPPER_ARM);
+	loadCubeObject(rightLowerArm, limbsS, TEX_RIGHT_LOWER_ARM, RIGHT_LOWER_ARM);
+	loadCubeObject(leftUpperLeg,  limbsS,  TEX_LEFT_UPPER_LEG,  LEFT_UPPER_LEG);
+	loadCubeObject(leftLowerLeg,  limbsS,  TEX_LEFT_LOWER_LEG,  LEFT_LOWER_LEG);
+	loadCubeObject(rightUpperLeg, limbsS, TEX_RIGHT_UPPER_LEG, RIGHT_UPPER_LEG);
+	loadCubeObject(rightLowerLeg, limbsS, TEX_RIGHT_LOWER_LEG, RIGHT_LOWER_LEG);
 
 	// Ground
-	auto groundId = loadGameObjects("cube", ground, groundS);
+	auto groundId = loadCubeObject(ground, groundS, TEX_GROUND);
 	// rotate the ground so it is on the same orientation as the camera
-	_gameObjects[groundId]._transform.rotation = {0, -3.14f / 2.f, 0};
 
 	// Skybox
-	VeGameObject skyboxObj = SkyboxRender::createSkyboxObject(_veDevice, "currently unused");
-	auto  skyboxId = skyboxObj.getId();
-	_gameObjects.emplace(skyboxId, std::move(skyboxObj));
+	auto skyboxId = loadCubeObject({0.f}, {128.f}, TEX_SKYBOX);
 	_skybox = &_gameObjects[skyboxId];
-
+	_skybox->_transform.rotation = {0, -3.14f / 2.f, 0};
 }
 
 void	MainClass::loadScop(void){
@@ -99,7 +118,8 @@ MainClass::MainClass(int scene, int color, int texture)
 : _color(color), _texture(texture){
 	_globalPool = VeDescriptorPool::Builder(_veDevice)
 		.setMaxSets(MAX_FRAMES * 2)
-		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES)
+		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES) // ubo
+		.addPoolSize(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES) // texIdMap
 		.addPoolSize(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_FRAMES)
 		.build();
 	if (scene == HUMANGL) loadHumanGL();
@@ -109,13 +129,21 @@ MainClass::MainClass(int scene, int color, int texture)
 MainClass::~MainClass(){
 }
 
-void MainClass::setTextureUvs(GlobalUbo &ubo)
+void MainClass::setTextureUvs(TexIdData &ubo)
 {
-
+	for (auto &uv : ubo.texUv)
+		uv = {{0.f, 0.f}, {1.f, 1.f}   };
+	ubo.texUv[TEXID(TEX_SKYBOX, Front)] =    {{0.25f, 0.25f}, {0.5f , 0.5f }};
+	ubo.texUv[TEXID(TEX_SKYBOX, Top)] =      {{0.25f, 0.f  }, {0.5f , 0.25f}};
+	ubo.texUv[TEXID(TEX_SKYBOX, Bottom)] =   {{0.25f, 0.5f }, {0.5f , 0.25f}};
+	ubo.texUv[TEXID(TEX_SKYBOX, Left)] =    {{0.25f, 0.25f}, {0.5f , 0.5f }};
+	ubo.texUv[TEXID(TEX_SKYBOX, Right)] =    {{0.25f, 0.25f}, {0.5f , 0.5f }};
+	ubo.texUv[TEXID(TEX_SKYBOX, Back)] =    {{0.25f, 0.25f}, {0.5f , 0.5f }};
 }
 
 void	MainClass::run(void){
 	vector<unique_ptr<VeBuffer>>	uboBuffers(MAX_FRAMES);
+	vector<unique_ptr<VeBuffer>>	texIdBuffers(MAX_FRAMES);
 	for (int i = 0; i < uboBuffers.size(); i++){
 		uboBuffers[i] = make_unique<VeBuffer>(
 			_veDevice,
@@ -127,16 +155,31 @@ void	MainClass::run(void){
 		);
 		uboBuffers[i]->map();
 	}
+	for (int i = 0; i < texIdBuffers.size(); i++){
+		texIdBuffers[i] = make_unique<VeBuffer>(
+			_veDevice,
+			sizeof(TexIdData),
+			1,
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+			_veDevice._properties.limits.minUniformBufferOffsetAlignment
+		);
+		texIdBuffers[i]->map();
+	}
+
 
 	auto	globalSetLayout = VeDescriptorSetLayout::Builder(_veDevice)
 		.addBinding(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
 			VK_SHADER_STAGE_ALL_GRAPHICS)
 		.addBinding(1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 
 			VK_SHADER_STAGE_FRAGMENT_BIT)
+		.addBinding(2, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			VK_SHADER_STAGE_ALL_GRAPHICS)
 	.build();
 	vector<VkDescriptorSet>	globalDescriptorSets(MAX_FRAMES);
 	for (int i = 0; i < globalDescriptorSets.size(); i++){
 		VkDescriptorBufferInfo	buffer = uboBuffers[i]->descriptorBufferInfo();
+		VkDescriptorBufferInfo	texIdBuffer = texIdBuffers[i]->descriptorBufferInfo();
 		VkDescriptorImageInfo	image;
 		for (const auto &[id, gameObject] : _gameObjects){
 			if (gameObject._model){
@@ -147,6 +190,7 @@ void	MainClass::run(void){
 		VeDescriptorWriter(*globalSetLayout, *_globalPool)
 			.writeBuffer(0, &buffer)
 			.writeImage(1, &image)
+			.writeBuffer(2, &texIdBuffer)
 			.build(globalDescriptorSets[i]);
 	}
 
@@ -222,12 +266,16 @@ void	MainClass::run(void){
 			pointLightSystem.update(frameInfo, ubo);
 			uboBuffers[frameIndex]->writeToBuffer(&ubo);
 			uboBuffers[frameIndex]->flush();
-			GlobalUbo::setTextureUvs(ubo);
+
+			TexIdData texIdData{};
+			MainClass::setTextureUvs(texIdData);
+			texIdBuffers[frameIndex]->writeToBuffer(&texIdData);
+			texIdBuffers[frameIndex]->flush();
 
 			// Render
 			_veRenderer.beginSwapChainRenderPass(commandBuffer);
-			simpleRenderSystem.renderObjects(frameInfo);
-			pointLightSystem.render(frameInfo);
+			//simpleRenderSystem.renderObjects(frameInfo);
+			//pointLightSystem.render(frameInfo);
 			if (_skybox != nullptr)
 				skyboxRenderSystem.renderSkybox(frameInfo, *_skybox);
 			_veRenderer.endSwapChainRenderPass(commandBuffer);

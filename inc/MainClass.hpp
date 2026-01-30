@@ -26,8 +26,8 @@ private:
 	unique_ptr<VeDescriptorPool>	_globalPool{};
 	VeGameObject::Map				_gameObjects;
 	VeGameObject::MapPtr			_model;
-	const vem::vec3					_cameraTranslation = {0.f, -8.f, -24.f};
-	const vem::vec3					_cameraRotation = {0.f, 0.f, 0.f};
+	const vem::vec3					_cameraTranslation = {0.f, -8.f, 24.f};
+	const vem::vec3					_cameraRotation = {0.f, M_PI, 0.f};
 	const float						_near = .1f;
 	const float						_far = 128.f;
 
@@ -35,14 +35,21 @@ private:
 		const string &filepath,
 		vem::vec3 translation,
 		vem::vec3 scale,
-		int bodyPart
+		int bodyPart = -1
 	);
 	void		loadHumanGL(void);
 	void		loadScop(void);
 
+	const uint loadCubeObject(
+		vem::vec3 translation,
+		vem::vec3 scale,
+		TexIdRaw texId,
+		int bodyPart = -1
+	);
+
 	// this is a function that setups the texture ids for the ubo
 	//      -> this could allow us to change textures at runtime!
-	static void setTextureUvs(GlobalUbo &ubo);
+	static void setTextureUvs(TexIdData &ubo);
 public:
 	using cV3 = const vem::vec3;
 

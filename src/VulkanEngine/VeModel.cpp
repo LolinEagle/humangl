@@ -343,13 +343,10 @@ uchar	*loadImage(const char *filename, int *x, int *y, int *comp, int req){
 	return (image_data);
 }
 
-void	VeModel::createTextureImages(const int &texture){
+void	VeModel::createTextureImages(){
 	int				texWidth, texHeight, texChannels;
 	string			filename;
-	if (texture == 0) filename = "model/texture/LolinEagle.png";
-	else if (texture == 1) filename = "model/texture/Stone.png";
-	else if (texture == 10) filename = "model/texture/panorama_atlas_minecraft.png";
-	else filename = "model/texture/Wood.png" ;
+	filename = "model/texture/panorama_atlas_minecraft.png";
 	uchar	*pixels = loadImage(
 		filename.c_str(),
 		&texWidth,
@@ -521,9 +518,64 @@ unique_ptr<VeModel>	VeModel::createModelFromFile(
 	return (make_unique<VeModel>(device, builder, texture));
 }
 
+//#define TEXID(raw, face) 9
+unique_ptr<VeModel> VeModel::createCubeModel(VeDevice &device, const TexIdRaw t)
+{
+	const VeModel::Builder cube_data = {
+		.vertices = {
+			// FRONT
+			{{ 1, -1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, {1.f, 0.f}, TEXID(t, Front)}, // TR
+			{{ 1,  1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, {1.f, 1.f}, TEXID(t, Front)}, // BR
+			{{-1,  1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, {0.f, 1.f}, TEXID(t, Front)}, // BL
+			{{-1, -1,  1}, {1.f, 1.f, 1.f}, { 0,  0, -1}, {0.f, 0.f}, TEXID(t, Front)}, // TL
+
+			// BACK
+			{{-1, -1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, {1.f, 0.f}, TEXID(t, Back)}, // TR
+			{{-1,  1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, {1.f, 1.f}, TEXID(t, Back)}, // BR
+			{{ 1,  1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, {0.f, 1.f}, TEXID(t, Back)}, // BL
+			{{ 1, -1, -1}, {0.f, 0.f, 0.f}, { 0,  0,  1}, {0.f, 0.f}, TEXID(t, Back)}, // TL
+
+			// LEFT
+			{{-1, -1,  1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, {1.f, 0.f}, TEXID(t, Left)}, // TR
+			{{-1,  1,  1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, {1.f, 1.f}, TEXID(t, Left)}, // BR
+			{{-1,  1, -1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, {0.f, 1.f}, TEXID(t, Left)}, // BL
+			{{-1, -1, -1}, {0.f, 0.f, 1.f}, { 1,  0,  0}, {0.f, 0.f}, TEXID(t, Left)}, // TL
+			
+			// RIGHT
+			{{ 1, -1, -1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, {1.f, 0.f}, TEXID(t, Right)}, // TR
+			{{ 1,  1, -1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, {1.f, 1.f}, TEXID(t, Right)}, // BR
+			{{ 1,  1,  1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, {0.f, 1.f}, TEXID(t, Right)}, // BL
+			{{ 1, -1,  1}, {0.f, 1.f, 0.f}, {-1,  0,  0}, {0.f, 0.f}, TEXID(t, Right)}, // TL
+			
+			// TOP
+			{{-1, -1,  1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, {1.f, 0.f}, TEXID(t, Top)}, // TR
+			{{-1, -1, -1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, {1.f, 1.f}, TEXID(t, Top)}, // BR
+			{{ 1, -1, -1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, {0.f, 1.f}, TEXID(t, Top)}, // BL
+			{{ 1, -1,  1}, {1.f, 0.f, 0.f}, { 0,  1,  0}, {0.f, 0.f}, TEXID(t, Top)}, // TL
+			
+			// BOTTOM
+			{{-1,  1, -1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, {1.f, 0.f}, TEXID(t, Bottom)},
+			{{-1,  1,  1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, {1.f, 1.f}, TEXID(t, Bottom)},
+			{{ 1,  1,  1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, {0.f, 1.f}, TEXID(t, Bottom)},
+			{{ 1,  1, -1}, {1.f, 1.f, 0.f}, { 0, -1,  0}, {0.f, 0.f}, TEXID(t, Bottom)},
+		},
+
+		.indices = {
+			0,  1,  2,  2,  3,  0,        // FRONT
+			4,  5,  6,  6,  7,  4,        // BACK
+			8,  9, 10, 10, 11,  8,        // LEFT
+		   12, 13, 14, 14, 15, 12,        // RIGHT 
+		   16, 17, 18, 18, 19, 16,        // TOP
+		   20, 21, 22, 22, 23, 20         // BOTTOM
+		}
+	};
+
+	return make_unique<VeModel>(device, cube_data, 1);
+}
+
 VeModel::VeModel(VeDevice &device, const VeModel::Builder &b, const int &t)
 : _veDevice(device){
-	createTextureImages(t);
+	createTextureImages();
 	createTextureImageView();
 	createTextureSampler();
 	createVertexBuffers(b.vertices);

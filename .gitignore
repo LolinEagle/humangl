@@ -57,3 +57,4 @@ compile_commands.json
 # build directories
 /obj
 /spirv
+render # renderdoc directory
