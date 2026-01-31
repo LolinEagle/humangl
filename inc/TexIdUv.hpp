@@ -3,8 +3,12 @@
 #include <VeFrameInfo.hpp>
 #include "header.hpp"
 
+
+// Maix  skin = 1024, 1024
+// Steve skin = 1088, 1024
+// Lolin skin = 1024, 1088
 #define MCM(name, face, x, y, w, h, flag) \
-	const TexIdMapping mc##name##face = p(1024 + (x), 1024 + (y), (w), (h), (flag));
+	const TexIdMapping mc##name##face = p(1088 + (x), 1024 + (y), (w), (h), (flag));
 
 struct TexUvMapping {
 	static constexpr uint ATLAS_WIDTH = 2048;
