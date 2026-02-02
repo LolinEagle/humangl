@@ -569,12 +569,12 @@ unique_ptr<VeModel> VeModel::createCubeModel(VeDevice &device, const TexIdRaw t)
 		},
 
 		.indices = {
-			0,  1,  2,  2,  3,  0,        // FRONT
-			4,  5,  6,  6,  7,  4,        // BACK
-			8,  9, 10, 10, 11,  8,        // LEFT
-		   12, 13, 14, 14, 15, 12,        // RIGHT 
-		   16, 17, 18, 18, 19, 16,        // TOP
-		   20, 21, 22, 22, 23, 20         // BOTTOM
+			2,  1,  0,  0,  3,  2,        // FRONT
+			6,  5,  4,  4,  7,  6,        // BACK
+		   10,  9,  8,  8, 11, 10,        // LEFT
+		   14, 13, 12, 12, 15, 14,        // RIGHT 
+		   18, 17, 16, 16, 19, 18,        // TOP
+		   22, 21, 20, 20, 23, 22         // BOTTOM
 		}
 	};
 

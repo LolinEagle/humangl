@@ -131,7 +131,7 @@ void	VePipeline::defaultPipelineConfigInfo(PipelineConfigInfo &c){
 	c.rasterizationInfo.rasterizerDiscardEnable = VK_FALSE;
 	c.rasterizationInfo.polygonMode = VK_POLYGON_MODE_FILL;
 	c.rasterizationInfo.lineWidth = 1.0f;
-	c.rasterizationInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
+	c.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
 	c.rasterizationInfo.frontFace = VK_FRONT_FACE_CLOCKWISE;
 	c.rasterizationInfo.depthBiasEnable = VK_FALSE;
 
