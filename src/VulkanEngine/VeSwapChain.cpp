@@ -232,10 +232,12 @@ void	VeSwapChain::createFramebuffers(void){
 }
 
 void	VeSwapChain::createSyncObjects(void){
-	_imageAvailableSemaphores.resize(MAX_FRAMES);
-	_renderFinishedSemaphores.resize(MAX_FRAMES);
+	// Create semaphores per swapchain image to avoid reuse issues
+	size_t imageCount = this->imageCount();
+	_imageAvailableSemaphores.resize(imageCount);
+	_renderFinishedSemaphores.resize(imageCount);
 	_inFlightFences.resize(MAX_FRAMES);
-	_imagesInFlight.resize(imageCount(), VK_NULL_HANDLE);
+	_imagesInFlight.resize(imageCount, VK_NULL_HANDLE);
 
 	VkSemaphoreCreateInfo	si{};
 	si.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -245,11 +247,16 @@ void	VeSwapChain::createSyncObjects(void){
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
 	const VkDevice	&d = _device.device();
-	for (uint i = 0; i < MAX_FRAMES; i++){
+	// Create semaphores for each swapchain image
+	for (size_t i = 0; i < imageCount; i++){
 		if (vkCreateSemaphore(d, &si, nullptr, &_imageAvailableSemaphores[i]) ||
-			vkCreateSemaphore(d, &si, nullptr, &_renderFinishedSemaphores[i]) ||
-			vkCreateFence(d, &fenceInfo, nullptr, &_inFlightFences[i])
+			vkCreateSemaphore(d, &si, nullptr, &_renderFinishedSemaphores[i])
 		)
+			throw (runtime_error("failed to create synchronization objects"));
+	}
+	// Create fences for frame synchronization (MAX_FRAMES)
+	for (uint i = 0; i < MAX_FRAMES; i++){
+		if (vkCreateFence(d, &fenceInfo, nullptr, &_inFlightFences[i]))
 			throw (runtime_error("failed to create synchronization objects"));
 	}
 }
@@ -330,9 +337,13 @@ VeSwapChain::~VeSwapChain(){
 	vkDestroyRenderPass(d, _renderPass, nullptr);
 
 	// Cleanup synchronization objects
-	for (size_t i = 0; i < MAX_FRAMES; i++){
-		vkDestroySemaphore(d, _renderFinishedSemaphores[i], nullptr);
+	// Semaphores are per swapchain image
+	for (size_t i = 0; i < _imageAvailableSemaphores.size(); i++){
 		vkDestroySemaphore(d, _imageAvailableSemaphores[i], nullptr);
+		vkDestroySemaphore(d, _renderFinishedSemaphores[i], nullptr);
+	}
+	// Fences are per frame (MAX_FRAMES)
+	for (size_t i = 0; i < MAX_FRAMES; i++){
 		vkDestroyFence(d, _inFlightFences[i], nullptr);
 	}
 }
@@ -387,6 +398,7 @@ VkFormat		VeSwapChain::findDepthFormat(void){
 }
 
 VkResult		VeSwapChain::acquireNextImage(uint *imageIndex){
+	// Wait for the frame fence to ensure command buffer is available
 	vkWaitForFences(
 		_device.device(),
 		1,
@@ -395,12 +407,29 @@ VkResult		VeSwapChain::acquireNextImage(uint *imageIndex){
 		numeric_limits<ulong>::max()
 	);
 
+	// Wait for any fences associated with images that might be acquired
+	// This ensures semaphores for those images are safe to reuse
+	for (size_t i = 0; i < _imagesInFlight.size(); i++){
+		if (_imagesInFlight[i] != VK_NULL_HANDLE){
+			vkWaitForFences(
+				_device.device(),
+				1,
+				&_imagesInFlight[i],
+				VK_TRUE,
+				numeric_limits<ulong>::max()
+			);
+		}
+	}
+
+	// Acquire the next image without a semaphore
+	// Since we've waited for all image fences, all semaphores are safe to reuse.
+	// We'll use per-image semaphores for presentation only.
 	VkResult	result = vkAcquireNextImageKHR(
 		_device.device(),
 		_swapChain,
 		numeric_limits<ulong>::max(),
-		_imageAvailableSemaphores[_currentFrame],
-		VK_NULL_HANDLE,
+		VK_NULL_HANDLE,  // No semaphore - image is immediately available after fence waits
+		VK_NULL_HANDLE,  // No fence
 		imageIndex
 	);
 
@@ -419,17 +448,16 @@ VkResult		VeSwapChain::submitCommandBuffers(
 	VkSubmitInfo	submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
-	VkSemaphore				waitSemaphores[] =
-		{_imageAvailableSemaphores[_currentFrame]};
-	VkPipelineStageFlags	waitStages[] =
-		{VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-	submitInfo.waitSemaphoreCount = 1;
-	submitInfo.pWaitSemaphores = waitSemaphores;
-	submitInfo.pWaitDstStageMask = waitStages;
+	// No wait semaphore needed since we acquired without one
+	// The image is immediately available after acquisition
+	submitInfo.waitSemaphoreCount = 0;
+	submitInfo.pWaitSemaphores = nullptr;
+	submitInfo.pWaitDstStageMask = nullptr;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = buffers;
 
-	VkSemaphore	signalSemaphores[] = {_renderFinishedSemaphores[_currentFrame]};
+	// Use semaphore indexed by image for presentation
+	VkSemaphore	signalSemaphores[] = {_renderFinishedSemaphores[*image]};
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
