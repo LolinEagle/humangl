@@ -30,7 +30,13 @@ private:
 	VkSurfaceKHR		_surface;
 	VkQueue				_graphicsQueue;
 	VkQueue				_presentQueue;
-	const LayerList		_validationLayers = {"VK_LAYER_KHRONOS_validation"};
+	const LayerList		_validationLayers = {
+		"VK_LAYER_INTEL_nullhw",
+		"VK_LAYER_KHRONOS_validation",
+		"VK_LAYER_MESA_device_select",
+		"VK_LAYER_MESA_overlay",
+		"VK_LAYER_NV_optimus",
+	};
 	const LayerList		_deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 	VkDebugUtilsMessengerEXT	_debugMessenger;
 

@@ -29,7 +29,7 @@ private:
 	const vem::vec3					_cameraTranslation = {0.f, -8.f, 24.f};
 	const vem::vec3					_cameraRotation = {0.f, M_PI, 0.f};
 	const float						_near = .1f;
-	const float						_far = 128.f;
+	const float						_far = 2048.f;
 
 	const uint	loadGameObjects(
 		const string &filepath,
