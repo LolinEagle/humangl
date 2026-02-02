@@ -161,7 +161,8 @@ void MainClass::setTextureUvs(TexIdData &texIdBuf)
 	COPY_TEX(texIdBuf, TEX_RIGHT_LOWER_LEG,  mcRightLegLower);
 
 	for (uint i = 0; i < 8; i++) {
-		texIdBuf.texUv[TEXID(TEX_GROUND, i)]  = idMap.lolin;
+		texIdBuf.texUv[TEXID(TEX_NONE, i)]     = idMap.wood;
+		texIdBuf.texUv[TEXID(TEX_GROUND, i)]   = idMap.lolin;
 		texIdBuf.texUv[TEXID(TEX_HAT_BASE, i)] = idMap.maix;
 		texIdBuf.texUv[TEXID(TEX_HAT_RIM, i)]  = idMap.wood;
 	}

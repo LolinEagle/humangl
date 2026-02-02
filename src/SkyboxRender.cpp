@@ -31,7 +31,7 @@ void	SkyboxRender::createPipeline(VkRenderPass renderPass){
 	VePipeline::defaultPipelineConfigInfo(pipelineConfig);
 	pipelineConfig.renderPass = renderPass;
 	pipelineConfig.pipelineLayout = _pipelineLayout;
-	pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+	pipelineConfig.rasterizationInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
 
 	_vePipeline = make_unique<VePipeline>(
 		_veDevice,
